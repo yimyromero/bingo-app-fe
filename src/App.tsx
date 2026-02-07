@@ -1,33 +1,28 @@
-import { useState } from 'react'
 import { ThemeProvider } from '@mui/material/styles'
-import viteLogo from '/vite.svg'
+import Box from '@mui/material/Box'
+import type { BoxProps } from '@mui/material/Box'
+import { RouterProvider } from 'react-router'
+import styled from 'styled-components'
+import router from './routes'
 import theme from './theme'
 
-function App() {
-  const [count, setCount] = useState(0)
+const AppContainer = styled(Box)<BoxProps>`
+  display: flex;
+  background-color: lightgray;
+`
 
+const CurrentScreen = styled(Box)<BoxProps>`
+  width: calc(100% - 240px);
+  margin-left: 240px;
+`
+const App = () => {
   return (
     <ThemeProvider theme={theme}>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          react.dev
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      <AppContainer component="main">
+        <CurrentScreen component="section">
+          <RouterProvider router={router} />
+        </CurrentScreen>
+      </AppContainer>
     </ThemeProvider>
   )
 }
