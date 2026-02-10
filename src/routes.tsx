@@ -1,5 +1,6 @@
 import { createBrowserRouter } from 'react-router'
 import UserInfo from './pages/UserInfo'
+import { BingosList } from './features/bingos/BingosList'
 
 const router = createBrowserRouter([
   {
@@ -9,6 +10,10 @@ const router = createBrowserRouter([
   {
     path: '/actions',
     element: <div>Actions go here</div>,
+  },
+  {
+    path: '/bingos',
+    element: <BingosList />,
   },
 ])
 
