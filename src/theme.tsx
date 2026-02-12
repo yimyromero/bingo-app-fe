@@ -1,65 +1,54 @@
 import { createTheme } from '@mui/material/styles'
-import { blue, orange } from '@mui/material/colors'
 
 const theme = createTheme({
   palette: {
     mode: 'light',
 
     background: {
-      default: '#F9FAFB',
+      default: '#F4F8FF',
       paper: '#FFFFFF',
     },
 
     primary: {
-      main: blue[500],
-      dark: blue[600],
-      light: blue[100],
+      main: '#5DA9F6',
+      light: '#E8F3FF',
+      dark: '#3D8DE3',
     },
 
     secondary: {
-      main: blue[400],
+      main: '#7ED957',
     },
 
     text: {
-      primary: '#111827',
-      secondary: '#4B5563',
+      primary: '#1F2937',
+      secondary: '#6B7280',
       disabled: '#9CA3AF',
     },
 
-    divider: '#E5E7EB',
-
-    error: {
-      main: '#EF4444',
-    },
-    success: {
-      main: '#22C55E',
-    },
-    warning: {
-      main: '#F59E0B',
-    },
+    divider: '#E3EAF5',
   },
+
+  shape: {
+    borderRadius: 10,
+  },
+
   components: {
+    MuiAppBar: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#FFFFFF',
+          color: '#1F2937',
+          boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
+        },
+      },
+    },
+
     MuiButton: {
       styleOverrides: {
         root: {
           textTransform: 'none',
           fontWeight: 500,
         },
-      },
-    },
-
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-        },
-      },
-    },
-
-    MuiTextField: {
-      defaultProps: {
-        variant: 'outlined',
-        size: 'small',
       },
     },
   },

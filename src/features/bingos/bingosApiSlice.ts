@@ -30,10 +30,10 @@ export const fetchBingos = createAppAsyncThunk(
     const response = await fetch('http://localhost:3000/bingos', {
       method: 'GET',
     })
-    if (!response.ok) {
-      throw new Error(`Response status: ${response.status}`)
-    }
     const result = await response.json()
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.statusText}`)
+    }
     return result.data
   },
   {
