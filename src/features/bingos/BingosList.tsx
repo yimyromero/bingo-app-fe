@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react'
 import { useAppSelector, useAppDispatch } from '../../hooks/hooks'
+import { Card, List } from '@mui/material'
 
 import {
   type Bingo,
@@ -8,6 +9,8 @@ import {
   selectBingosError,
   selectBingoStatus,
 } from './bingosApiSlice'
+import BingoCard from './BingoCard'
+import type { BingoCardType } from './BingoCard'
 export const BingosList = () => {
   const dispatch = useAppDispatch()
   const bingos = useAppSelector(selectAllBingos)
@@ -30,11 +33,14 @@ export const BingosList = () => {
       .slice()
       .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
     content = orderedBingos.map((bingo) => (
-      <div key={bingo.id}>
-        <h3>{bingo.title}</h3>
-        <span>{bingo.createdAt}</span>
-        <span>{bingo.gridSize}</span>
-      </div>
+      // <div key={bingo.id}>
+      //   <h3>{bingo.title}</h3>
+      //   <span>{bingo.createdAt}</span>
+      //   <span>{bingo.gridSize}</span>
+      // </div>
+      <List>
+        <BingoCard {...bingo} />
+      </List>
     ))
   } else if (bingoStatus === 'rejected') {
     content = <div>{bingosError}</div>
