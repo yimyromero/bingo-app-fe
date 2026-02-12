@@ -9,22 +9,23 @@ import {
   Typography,
 } from '@mui/material'
 
-export interface BingoCardType {
+export interface UserCardType {
   id: number
-  title: string
-  gridSize: number
-  raffleDate?: string
-  isDone?: boolean
+  email: string
+  passwordHash: string
+  name: string
+  roles: string
+  active: boolean
 }
 
-const BingoCard = ({ ...card }: BingoCardType) => {
+const UserCard = ({ ...user }: UserCardType) => {
   return (
     <ListItem
       sx={{
         background: 'Background',
         borderRadius: 2,
       }}
-      key={card.id}
+      key={user.id}
       secondaryAction={
         <Stack
           direction="row"
@@ -33,8 +34,8 @@ const BingoCard = ({ ...card }: BingoCardType) => {
         >
           <Chip
             size="small"
-            label={`${!card.isDone ? 'active' : 'finished'}`}
-            color={`${!card.isDone ? 'success' : 'error'}`}
+            label={`${!user.active ? 'active' : 'inactive'}`}
+            color={`${!user.active ? 'success' : 'error'}`}
             variant="outlined"
           />
           <IconButton arial-label="More options" size="small">
@@ -46,19 +47,25 @@ const BingoCard = ({ ...card }: BingoCardType) => {
       <ListItemText
         primary={
           <Typography component="div" sx={{ fontWeight: 600 }}>
-            {card.title}
+            {user.name}
           </Typography>
         }
         secondary={
           <Box>
             <Typography
-              component="time"
+              component="desc"
               variant="body2"
               sx={{ color: 'text.secondary' }}
             >
-              {card.raffleDate}
+              {user.email}
             </Typography>
-            <Typography># {card.gridSize}</Typography>
+            <Typography
+              variant="body2"
+              aria-label="user roles"
+              component="details"
+            >
+              Roles: {user.roles}
+            </Typography>
           </Box>
         }
       ></ListItemText>
@@ -66,4 +73,4 @@ const BingoCard = ({ ...card }: BingoCardType) => {
   )
 }
 
-export default BingoCard
+export default UserCard

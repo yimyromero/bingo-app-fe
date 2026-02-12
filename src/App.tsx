@@ -8,6 +8,7 @@ import theme from './theme'
 import { BingosList } from './features/bingos/BingosList'
 import Public from './components/Public'
 import MainLayout from './components/MainLayout'
+import { UsersList } from './features/users/UsersList'
 
 const App = () => {
   return (
@@ -16,6 +17,7 @@ const App = () => {
         <Route path="/" element={<Public />} />
         <Route path="dash" element={<MainLayout />}>
           <Route path="bingos" element={<BingosList />} />
+          <Route path="users" element={<UsersList />} />
         </Route>
       </Routes>
     </ThemeProvider>
