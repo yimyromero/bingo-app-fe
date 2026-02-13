@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
 import { useAppSelector, useAppDispatch } from '../../hooks/hooks'
-import { List } from '@mui/material'
+import { Button, List, Stack, Typography } from '@mui/material'
+import { Link } from 'react-router'
 
 import {
   type User,
@@ -11,10 +12,10 @@ import {
 } from './usersApiSlice'
 import UserCard from './UserCard'
 import type { UserCardType } from './UserCard'
+import { AddLink } from '@mui/icons-material'
 export const UsersList = () => {
   const dispatch = useAppDispatch()
   const users = useAppSelector(selectAllUsers)
-  console.log(users, 'users')
   const userStatus = useAppSelector(selectUserStatus)
   const usersError = useAppSelector(selectUsersError)
 
@@ -43,7 +44,16 @@ export const UsersList = () => {
 
   return (
     <section>
-      <h2>Users</h2>
+      <Stack
+        direction="row"
+        sx={{ display: 'flex', justifyContent: 'space-between' }}
+      >
+        <Typography component="h1">Users</Typography>
+        <Button variant="contained" component={Link} to="/dash/users/new">
+          New user
+        </Button>
+      </Stack>
+
       {content}
     </section>
   )

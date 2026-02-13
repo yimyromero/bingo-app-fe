@@ -46,6 +46,28 @@ export const fetchUsers = createAppAsyncThunk(
   }
 )
 
+export const addNewUser = createAppAsyncThunk(
+  'users/addNewUser',
+  async (initialUser: NewUser) => {
+    const { passwordHash, ...rest } = initialUser
+    const response = await fetch('http://localhost:3000/users', {
+      method: 'POST',
+      body: JSON.stringify({
+        ...rest,
+        password_hash: passwordHash,
+      }),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+    const result = await response.json()
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.statusText}`)
+    }
+    return result.data
+  }
+)
+
 const initialState: UsersState = {
   users: [],
   status: 'idle',
@@ -80,6 +102,9 @@ const usersSlice = createSlice({
       .addCase(fetchUsers.rejected, (state, action) => {
         state.status = 'rejected'
         state.error = action.error.message ?? 'Unknown Error'
+      })
+      .addCase(addNewUser.fulfilled, (state, action) => {
+        state.users.push(action.payload)
       })
   },
 })

@@ -1,5 +1,5 @@
 import { createTheme } from '@mui/material/styles'
-import { green, lightGreen, teal } from '@mui/material/colors'
+import { green, lightBlue, lightGreen, teal } from '@mui/material/colors'
 
 const theme = createTheme({
   palette: {
@@ -11,7 +11,7 @@ const theme = createTheme({
     },
 
     primary: {
-      main: '#5DA9F6',
+      main: lightBlue['A400'],
       light: '#E8F3FF',
       dark: '#3D8DE3',
     },

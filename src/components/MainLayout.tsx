@@ -20,10 +20,27 @@ import Box from '@mui/material/Box'
 import { useState } from 'react'
 import CssBaseline from '@mui/material/CssBaseline'
 import { AppBar, IconButton, Typography } from '@mui/material'
-import { Outlet } from 'react-router'
+import { Link, Outlet } from 'react-router'
+import { NavLink } from 'react-router'
 
 const drawerWidth = 240
-const primaryIconOptions = [<DashboardIcon />, <UsersIcon />, <ListIcon />]
+const primaryMenuOptions = [
+  {
+    text: 'Dashboard',
+    path: '/dash',
+    icon: <DashboardIcon />,
+  },
+  {
+    text: 'Users',
+    path: '/dash/users',
+    icon: <UsersIcon />,
+  },
+  {
+    text: 'Bingos',
+    path: '/dash/bingos',
+    icon: <ListIcon />,
+  },
+]
 const secondaryIconOptions = [<AccountSettingsIcons />, <LogoutIcon />]
 
 const MainLayout = () => {
@@ -60,11 +77,23 @@ const MainLayout = () => {
       <Toolbar />
       <Divider />
       <List>
-        {['Dashboard', 'Users', 'Bingos'].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>{primaryIconOptions[index]}</ListItemIcon>
-              <ListItemText primary={text} />
+        {primaryMenuOptions.map((option, index) => (
+          <ListItem key={option.text} disablePadding>
+            <ListItemButton
+              component={NavLink}
+              to={option.path}
+              end
+              sx={{
+                '&.active': {
+                  backgroundColor: 'action.selected',
+                  '& .MuiListItemIcon-root': {
+                    color: 'primary.main',
+                  },
+                },
+              }}
+            >
+              <ListItemIcon>{option.icon}</ListItemIcon>
+              <ListItemText primary={option.text} />
             </ListItemButton>
           </ListItem>
         ))}
