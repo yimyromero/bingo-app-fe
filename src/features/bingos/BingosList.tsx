@@ -1,6 +1,7 @@
 import React, { useEffect } from 'react'
+import { Link } from 'react-router'
 import { useAppSelector, useAppDispatch } from '../../hooks/hooks'
-import { Card, List } from '@mui/material'
+import { Card, List, Stack, Typography, Button, Divider } from '@mui/material'
 
 import {
   type Bingo,
@@ -48,7 +49,15 @@ export const BingosList = () => {
 
   return (
     <section>
-      <h2>Bingos</h2>
+      <Stack
+        direction="row"
+        sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}
+      >
+        <Typography variant="h4">Bingos</Typography>
+        <Button variant="contained" component={Link} to="/dash/bingos/new">
+          New bingo
+        </Button>
+      </Stack>
       {content}
     </section>
   )

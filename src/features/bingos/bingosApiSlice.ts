@@ -16,7 +16,7 @@ type BingoUpdated = Pick<
   Bingo,
   'id' | 'title' | 'gridSize' | 'raffleDate' | 'isDone'
 >
-type NewBingo = Pick<Bingo, 'title' | 'gridSize' | 'userId'>
+type NewBingo = Pick<Bingo, 'userId' | 'title' | 'gridSize'>
 
 interface BingosState {
   bingos: Bingo[]
@@ -44,6 +44,27 @@ export const fetchBingos = createAppAsyncThunk(
         return false
       }
     },
+  }
+)
+
+export const addNewBingo = createAppAsyncThunk(
+  'bingos/addNewBingo',
+  async (initialBingo: NewBingo) => {
+    const response = await fetch('http://localhost:3000/bingos', {
+      method: 'POST',
+      body: JSON.stringify(initialBingo),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.statusText}`)
+    }
+
+    return result.data
   }
 )
 

@@ -46,9 +46,9 @@ export const UsersList = () => {
     <section>
       <Stack
         direction="row"
-        sx={{ display: 'flex', justifyContent: 'space-between' }}
+        sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}
       >
-        <Typography component="h1">Users</Typography>
+        <Typography variant="h4">Users</Typography>
         <Button variant="contained" component={Link} to="/dash/users/new">
           New user
         </Button>
