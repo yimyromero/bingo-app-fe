@@ -1,15 +1,27 @@
-import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
+import {
+  createSlice,
+  type PayloadAction,
+  createEntityAdapter,
+} from '@reduxjs/toolkit'
 import type { RootState } from '../../store'
 import { createAppAsyncThunk } from '../../withTypes'
 
+type Status = 'idle' | 'pending' | 'succeeded' | 'failed'
 export interface Bingo {
   id: number
   userId: number
   title: string
   gridSize: number
-  raffleDate?: string
+  raffleDate: string
   isDone?: boolean
   createdAt: string
+}
+
+export interface BingoDetail {
+  id: number
+  bingoId: number
+  cellNumber: number
+  participantName: string | null
 }
 
 type BingoUpdated = Pick<
@@ -19,10 +31,29 @@ type BingoUpdated = Pick<
 type NewBingo = Pick<Bingo, 'userId' | 'title' | 'gridSize'>
 
 interface BingosState {
-  bingos: Bingo[]
-  status: 'idle' | 'pending' | 'succeeded' | 'rejected'
+  bingos: {
+    entities: Record<string, Bingo>
+    ids: string[]
+  }
+
+  details: {
+    entities: Record<string, BingoDetail>
+    idsByBingoId: Record<string, string[]>
+  }
+
+  listStatus: Status
+  detailsStatus: Status
+  updateCellStatus: Status
+
   error: string | null
 }
+
+const bingosAdapter = createEntityAdapter<Bingo>({
+  sortComparer: (a, b) =>
+    new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+})
+
+const detailsAdapter = createEntityAdapter<BingoDetail>()
 
 export const fetchBingos = createAppAsyncThunk(
   'bingos/fetchBingos',
@@ -68,45 +99,76 @@ export const addNewBingo = createAppAsyncThunk(
   }
 )
 
-const initialState: BingosState = {
-  bingos: [],
-  status: 'idle',
-  error: null,
+// Get bingo details
+export const getBingoDetails = createAppAsyncThunk(
+  'bingos/getBingoDetails',
+  async (bingoId: number) => {
+    const response = await fetch(
+      `http://localhost:3000/bingos/'${bingoId}/details`,
+      {
+        method: 'GET',
+      }
+    )
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.statusText}`)
+    }
+
+    return result.data
+  }
+)
+
+const initialState = {
+  bingos: bingosAdapter.getInitialState(),
+  details: detailsAdapter.getInitialState<{
+    idsByBingoId: Record<number, string[]>
+  }>({
+    idsByBingoId: {},
+  }),
+  listStatus: 'idle' as Status,
+  detailStatus: 'idle' as Status,
+  error: null as string | null,
 }
 
 const bingosSlice = createSlice({
   name: 'bingos',
   initialState,
-  reducers: {
-    bingoUpdated(state, action: PayloadAction<BingoUpdated>) {
-      const { id, title, gridSize } = action.payload
-      const existingBingo = state.bingos.find((bingo) => bingo.id === id)
-      if (existingBingo) {
-        existingBingo.title = title
-        existingBingo.gridSize = gridSize
-      }
-    },
-  },
+  reducers: {},
   extraReducers: (builder) => {
     builder
       .addCase(fetchBingos.pending, (state, action) => {
-        state.status = 'pending'
+        state.listStatus = 'pending'
       })
       .addCase(fetchBingos.fulfilled, (state, action) => {
-        state.status = 'succeeded'
-        state.bingos = action.payload
+        state.listStatus = 'succeeded'
+        bingosAdapter.setAll(state.bingos, action.payload)
       })
       .addCase(fetchBingos.rejected, (state, action) => {
-        state.status = 'rejected'
+        state.listStatus = 'failed'
         state.error = action.error.message ?? 'Unknown Error'
+      })
+      .addCase(getBingoDetails.pending, (state, action) => {
+        state.detailStatus = 'pending'
+      })
+      .addCase(getBingoDetails.fulfilled, (state, action) => {
+        state.detailStatus = 'succeeded'
+        detailsAdapter.upsertMany(state.details, action.payload)
       })
   },
 })
 
-export const { bingoUpdated } = bingosSlice.actions
 export default bingosSlice.reducer
-export const selectAllBingos = (state: RootState) => state.bingos.bingos
-export const selectBingosById = (state: RootState, bingoId: number) =>
-  state.bingos.bingos.find((bingo) => bingo.id === bingoId)
-export const selectBingoStatus = (state: RootState) => state.bingos.status
+const selectBingosState = (state: RootState) => state.bingos.bingos
+export const bingoDetailsSelector = detailsAdapter.getSelectors()
+
+export const {
+  selectAll: selectAllBingos,
+  selectById: selectBingosById,
+  selectIds: selectBingosIds,
+} = bingosAdapter.getSelectors(selectBingosState)
+
+export const selectBingoStatus = (state: RootState) => state.bingos.listStatus
+
 export const selectBingosError = (state: RootState) => state.bingos.error

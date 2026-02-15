@@ -7,6 +7,7 @@ import {
   type Bingo,
   fetchBingos,
   selectAllBingos,
+  //bingosSelector,
   selectBingosError,
   selectBingoStatus,
 } from './bingosApiSlice'
@@ -30,20 +31,15 @@ export const BingosList = () => {
   if (bingoStatus === 'pending') {
     content = <h1>Loading...</h1>
   } else if (bingoStatus === 'succeeded') {
-    const orderedBingos = bingos
-      .slice()
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    content = orderedBingos.map((bingo) => (
-      // <div key={bingo.id}>
-      //   <h3>{bingo.title}</h3>
-      //   <span>{bingo.createdAt}</span>
-      //   <span>{bingo.gridSize}</span>
-      // </div>
+    content = (
       <List>
-        <BingoCard {...bingo} />
+        {' '}
+        {bingos.map((bingo) => (
+          <BingoCard key={bingo.id} {...bingo} />
+        ))}
       </List>
-    ))
-  } else if (bingoStatus === 'rejected') {
+    )
+  } else if (bingoStatus === 'failed') {
     content = <div>{bingosError}</div>
   }
 

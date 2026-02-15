@@ -1,3 +1,5 @@
+import { useState } from 'react'
+import { Link } from 'react-router'
 import { MoreHoriz, ShapeLine } from '@mui/icons-material'
 import {
   Box,
@@ -5,8 +7,12 @@ import {
   IconButton,
   ListItem,
   ListItemText,
+  Button,
   Stack,
   Typography,
+  Menu,
+  MenuItem,
+  ListItemButton,
 } from '@mui/material'
 
 export interface BingoCardType {
@@ -18,13 +24,21 @@ export interface BingoCardType {
 }
 
 const BingoCard = ({ ...card }: BingoCardType) => {
+  const settings = ['View', 'Edit']
+  const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
+  const handleCloseUserMenu = () => {
+    setAnchorElUser(null)
+  }
+  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorElUser(event.currentTarget)
+  }
+
   return (
     <ListItem
       sx={{
         background: 'Background',
         borderRadius: 2,
       }}
-      key={card.id}
       secondaryAction={
         <Stack
           direction="row"
@@ -37,9 +51,48 @@ const BingoCard = ({ ...card }: BingoCardType) => {
             color={`${!card.isDone ? 'success' : 'error'}`}
             variant="outlined"
           />
-          <IconButton arial-label="More options" size="small">
-            <MoreHoriz />
-          </IconButton>
+          <Box>
+            <IconButton
+              onClick={handleOpenUserMenu}
+              arial-label="More options"
+              size="small"
+            >
+              <MoreHoriz />
+            </IconButton>
+            <Menu
+              sx={{ mt: '30px' }}
+              id="menu-row"
+              anchorEl={anchorElUser}
+              anchorOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              keepMounted
+              transformOrigin={{
+                vertical: 'top',
+                horizontal: 'right',
+              }}
+              open={Boolean(anchorElUser)}
+              onClose={handleCloseUserMenu}
+            >
+              {settings.map((setting) => (
+                <ListItem
+                  key={setting}
+                  onClick={handleCloseUserMenu}
+                  disablePadding
+                  dense
+                >
+                  <ListItemButton
+                    component={Link}
+                    to={`/dash/bingos/${card.id}/view`}
+                    sx={{ textAlign: 'center' }}
+                  >
+                    {setting}
+                  </ListItemButton>
+                </ListItem>
+              ))}
+            </Menu>
+          </Box>
         </Stack>
       }
     >

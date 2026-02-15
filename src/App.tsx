@@ -11,6 +11,7 @@ import MainLayout from './components/MainLayout'
 import { UsersList } from './features/users/UsersList'
 import AddUser from './features/users/AddUser'
 import AddBingo from './features/bingos/AddBingo'
+import BingoView from './features/bingos/BingoView'
 
 const App = () => {
   return (
@@ -22,6 +23,7 @@ const App = () => {
             <Route index element={<BingosList />} />
             <Route path=":id" />
             <Route path="new" element={<AddBingo />} />
+            <Route path=":id/view" element={<BingoView />} />
           </Route>
           <Route path="users">
             <Route index element={<UsersList />} />
