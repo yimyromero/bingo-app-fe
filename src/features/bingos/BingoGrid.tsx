@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
 import { Grid, styled, Paper } from '@mui/material'
+import type { BingoDetail } from './bingosApiSlice'
 
 const Item = styled(Paper)(({ theme }) => ({
   backgroundColor: '#fff',
@@ -12,16 +12,18 @@ const Item = styled(Paper)(({ theme }) => ({
   }),
 }))
 
-const BingoGrid = () => {
+interface BingoGridProps {
+  details: BingoDetail[]
+}
+
+const BingoGrid = ({ details }: BingoGridProps) => {
+  const colsPartition = Math.ceil(Math.sqrt(details.length))
+
   const grid = (
-    <Grid
-      container
-      spacing={{ xs: 2, md: 3 }}
-      columns={{ xs: 4, sm: 8, md: 12 }}
-    >
-      {Array.from(Array(6)).map((_, index) => (
-        <Grid key={index} size={{ xs: 2, sm: 4, md: 4 }}>
-          <Item>{index + 1}</Item>
+    <Grid container spacing={{ xs: 2, md: 3 }}>
+      {details.map((detail: BingoDetail) => (
+        <Grid key={detail.id} size={{ xs: 'auto', sm: 12 / colsPartition }}>
+          <Item>{detail.cellNumber}</Item>
         </Grid>
       ))}
     </Grid>

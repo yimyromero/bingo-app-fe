@@ -2,6 +2,7 @@ import {
   createSlice,
   type PayloadAction,
   createEntityAdapter,
+  type EntityState,
 } from '@reduxjs/toolkit'
 import type { RootState } from '../../store'
 import { createAppAsyncThunk } from '../../withTypes'
@@ -29,24 +30,6 @@ type BingoUpdated = Pick<
   'id' | 'title' | 'gridSize' | 'raffleDate' | 'isDone'
 >
 type NewBingo = Pick<Bingo, 'userId' | 'title' | 'gridSize'>
-
-interface BingosState {
-  bingos: {
-    entities: Record<string, Bingo>
-    ids: string[]
-  }
-
-  details: {
-    entities: Record<string, BingoDetail>
-    idsByBingoId: Record<string, string[]>
-  }
-
-  listStatus: Status
-  detailsStatus: Status
-  updateCellStatus: Status
-
-  error: string | null
-}
 
 const bingosAdapter = createEntityAdapter<Bingo>({
   sortComparer: (a, b) =>
@@ -100,33 +83,43 @@ export const addNewBingo = createAppAsyncThunk(
 )
 
 // Get bingo details
-export const getBingoDetails = createAppAsyncThunk(
+export const fetchBingoDetails = createAppAsyncThunk(
   'bingos/getBingoDetails',
   async (bingoId: number) => {
     const response = await fetch(
-      `http://localhost:3000/bingos/'${bingoId}/details`,
+      `http://localhost:3000/bingos/${bingoId}/details`,
       {
         method: 'GET',
       }
     )
 
     const result = await response.json()
-
+    console.log(result, 'json')
+    console.log(response.status, response.ok, 'res')
     if (!response.ok) {
       throw new Error(`Response status: ${response.statusText}`)
     }
 
-    return result.data
+    return result
+  },
+  {
+    // runs at the start of the thunk call
+    condition(bingoId, thunkApi) {
+      const state = thunkApi.getState()
+      const { currentBingoId, detailStatus } = state.bingos
+
+      if (detailStatus === 'pending' || currentBingoId === bingoId) {
+        return false
+      }
+      return true
+    },
   }
 )
 
 const initialState = {
   bingos: bingosAdapter.getInitialState(),
-  details: detailsAdapter.getInitialState<{
-    idsByBingoId: Record<number, string[]>
-  }>({
-    idsByBingoId: {},
-  }),
+  details: detailsAdapter.getInitialState(),
+  currentBingoId: null as number | null,
   listStatus: 'idle' as Status,
   detailStatus: 'idle' as Status,
   error: null as string | null,
@@ -149,19 +142,25 @@ const bingosSlice = createSlice({
         state.listStatus = 'failed'
         state.error = action.error.message ?? 'Unknown Error'
       })
-      .addCase(getBingoDetails.pending, (state, action) => {
+      .addCase(fetchBingoDetails.pending, (state, action) => {
         state.detailStatus = 'pending'
+        detailsAdapter.removeAll(state.details)
       })
-      .addCase(getBingoDetails.fulfilled, (state, action) => {
+      .addCase(fetchBingoDetails.fulfilled, (state, action) => {
         state.detailStatus = 'succeeded'
-        detailsAdapter.upsertMany(state.details, action.payload)
+        state.currentBingoId = action.meta.arg
+        detailsAdapter.setAll(state.details, action.payload)
+      })
+      .addCase(fetchBingoDetails.rejected, (state, action) => {
+        state.detailStatus = 'failed'
+        state.error = action.error.message ?? 'Unknown Error'
       })
   },
 })
 
 export default bingosSlice.reducer
 const selectBingosState = (state: RootState) => state.bingos.bingos
-export const bingoDetailsSelector = detailsAdapter.getSelectors()
+const selectDetailsState = (state: RootState) => state.bingos.details
 
 export const {
   selectAll: selectAllBingos,
@@ -169,6 +168,18 @@ export const {
   selectIds: selectBingosIds,
 } = bingosAdapter.getSelectors(selectBingosState)
 
-export const selectBingoStatus = (state: RootState) => state.bingos.listStatus
+export const {
+  selectAll: selectAllDetails,
+  selectById: selectDetailsById,
+  selectIds: selectDetailsIds,
+} = detailsAdapter.getSelectors(selectDetailsState)
 
+export const selectBingoStatus = (state: RootState) => state.bingos.listStatus
 export const selectBingosError = (state: RootState) => state.bingos.error
+
+export const selectCurrentBingoId = (state: RootState) =>
+  state.bingos.currentBingoId
+
+export const selectDetailsStatus = (state: RootState) =>
+  state.bingos.detailStatus
+export const selectDetailsError = (state: RootState) => state.bingos.error

@@ -38,6 +38,7 @@ const BingoCard = ({ ...card }: BingoCardType) => {
       sx={{
         background: 'Background',
         borderRadius: 2,
+        mb: 2,
       }}
       secondaryAction={
         <Stack

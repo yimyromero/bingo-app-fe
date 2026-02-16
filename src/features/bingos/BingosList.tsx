@@ -33,7 +33,6 @@ export const BingosList = () => {
   } else if (bingoStatus === 'succeeded') {
     content = (
       <List>
-        {' '}
         {bingos.map((bingo) => (
           <BingoCard key={bingo.id} {...bingo} />
         ))}
