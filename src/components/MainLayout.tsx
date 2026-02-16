@@ -118,8 +118,8 @@ const MainLayout = () => {
       <AppBar
         position="fixed"
         sx={{
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
-          ml: { sm: `${drawerWidth}px` },
+          width: { md: `calc(100% - ${drawerWidth}px)` },
+          ml: { md: `${drawerWidth}px` },
         }}
       >
         <Toolbar>
@@ -130,7 +130,7 @@ const MainLayout = () => {
             onClick={handleDrawerToggle}
             sx={{
               mr: 2,
-              display: { sm: 'none' },
+              display: { md: 'none' },
             }}
           >
             <MenuIcon />
@@ -189,7 +189,7 @@ const MainLayout = () => {
       </AppBar>
       <Box
         component="nav"
-        sx={{ width: { sm: drawerWidth }, flexShrink: { sm: 0 } }}
+        sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
         aria-label="menu-options"
       >
         <Drawer
@@ -198,7 +198,7 @@ const MainLayout = () => {
           onTransitionEnd={handleDrawerTransitionEnd}
           onClose={handleDrawerClose}
           sx={{
-            display: { xs: 'block', sm: 'none' },
+            display: { sm: 'block', md: 'none' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
@@ -215,7 +215,7 @@ const MainLayout = () => {
         <Drawer
           variant="permanent"
           sx={{
-            display: { xs: 'none', sm: 'block' },
+            display: { xs: 'none', md: 'block' },
             '& .MuiDrawer-paper': {
               boxSizing: 'border-box',
               width: drawerWidth,
@@ -231,7 +231,7 @@ const MainLayout = () => {
         sx={{
           flexGrow: 1,
           p: 3,
-          width: { sm: `calc(100% - ${drawerWidth}px)` },
+          width: { md: `calc(100% - ${drawerWidth}px)` },
         }}
       >
         <Toolbar />

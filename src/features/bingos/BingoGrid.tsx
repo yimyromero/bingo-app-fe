@@ -1,4 +1,4 @@
-import { Grid, styled, Paper } from '@mui/material'
+import { Grid, styled, Paper, Box, ListItemButton, Button } from '@mui/material'
 import type { BingoDetail } from './bingosApiSlice'
 
 const Item = styled(Paper)(({ theme }) => ({
@@ -22,8 +22,21 @@ const BingoGrid = ({ details }: BingoGridProps) => {
   const grid = (
     <Grid container spacing={{ xs: 2, md: 3 }}>
       {details.map((detail: BingoDetail) => (
-        <Grid key={detail.id} size={{ xs: 'auto', sm: 12 / colsPartition }}>
-          <Item>{detail.cellNumber}</Item>
+        <Grid key={detail.id} size={{ xs: 3, sm: 12 / colsPartition }}>
+          <Button
+            variant="contained"
+            sx={
+              {
+                //backgroundColor: `${!detail.participantName?.trim().length ? 'primary.main' : 'text.disabled'}`,
+              }
+            }
+          >
+            {detail.cellNumber}
+          </Button>
+          <Box id="hidden-detail" sx={{ display: 'none' }}>
+            <span className="participant-name">{detail.participantName}</span>
+            <span>{detail.bingoId}</span>
+          </Box>
         </Grid>
       ))}
     </Grid>

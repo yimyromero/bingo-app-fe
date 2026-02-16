@@ -3,6 +3,7 @@ import {
   type PayloadAction,
   createEntityAdapter,
   type EntityState,
+  createSelector,
 } from '@reduxjs/toolkit'
 import type { RootState } from '../../store'
 import { createAppAsyncThunk } from '../../withTypes'
@@ -159,6 +160,7 @@ const bingosSlice = createSlice({
       })
       .addCase(fetchBingoDetails.rejected, (state, action) => {
         state.detailStatus = 'failed'
+        state.currentBingoId = action.meta.arg
         state.error = action.error.message ?? 'Unknown Error'
       })
   },
@@ -179,6 +181,11 @@ export const {
   selectById: selectDetailsById,
   selectIds: selectDetailsIds,
 } = detailsAdapter.getSelectors(selectDetailsState)
+
+export const selectTakenCount = createSelector(
+  selectAllDetails,
+  (details) => details.filter((detail) => detail.participantName?.trim()).length
+)
 
 export const selectBingoStatus = (state: RootState) => state.bingos.listStatus
 export const selectBingosError = (state: RootState) => state.bingos.error

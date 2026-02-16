@@ -18,9 +18,9 @@ import {
   selectDetailsStatus,
   selectDetailsError,
   fetchBingoDetails,
-  selectCurrentBingoId,
+  selectBingosById,
+  selectTakenCount,
 } from './bingosApiSlice'
-import { useSelector } from 'react-redux'
 
 const BingoView = () => {
   const dispatch = useAppDispatch()
@@ -28,12 +28,12 @@ const BingoView = () => {
   console.log(details[0], 'details')
   const detailStatus = useAppSelector(selectDetailsStatus)
   const detailError = useAppSelector(selectDetailsError)
-  const currentBingoId = useSelector(selectCurrentBingoId)
+  const takenBingoSquares = useAppSelector(selectTakenCount)
+  console.log('taken', takenBingoSquares)
 
   const { id } = useParams()
   const numericId = Number(id)
-  console.log(currentBingoId, 'current', numericId)
-  console.log(numericId !== currentBingoId)
+  const bingo = useAppSelector((state) => selectBingosById(state, numericId))
 
   useEffect(() => {
     dispatch(fetchBingoDetails(numericId))
@@ -52,15 +52,22 @@ const BingoView = () => {
   return (
     <Container>
       <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Typography variant="h6">Placedholder</Typography>
+        <Typography variant="h6">{bingo.title}</Typography>
         <Stack direction="row" spacing={2}>
-          <Badge badgeContent="12" color="secondary">
+          <Badge
+            badgeContent={bingo.gridSize - takenBingoSquares}
+            color="secondary"
+          >
             <NumbersIcon color="action" />
           </Badge>
-          <Badge badgeContent="28" color="warning">
+          <Badge badgeContent={takenBingoSquares.toString()} color="warning">
             <NumbersIcon color="action" />
           </Badge>
-          <Badge badgeContent="40" color="primary">
+          <Badge
+            badgeContent={bingo.gridSize}
+            color="primary"
+            aria-label="number of squares"
+          >
             <NumbersIcon color="action" />
           </Badge>
         </Stack>
