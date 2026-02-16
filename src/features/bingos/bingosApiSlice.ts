@@ -142,6 +142,12 @@ const bingosSlice = createSlice({
         state.listStatus = 'failed'
         state.error = action.error.message ?? 'Unknown Error'
       })
+      .addCase(addNewBingo.fulfilled, (state, action) => {
+        bingosAdapter.upsertOne(state.bingos, action.payload)
+      })
+      .addCase(addNewBingo.rejected, (state, action) => {
+        state.error = action.error.message ?? 'Unknow Error'
+      })
       .addCase(fetchBingoDetails.pending, (state, action) => {
         state.detailStatus = 'pending'
         detailsAdapter.removeAll(state.details)
