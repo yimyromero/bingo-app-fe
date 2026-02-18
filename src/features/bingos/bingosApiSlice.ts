@@ -32,12 +32,16 @@ type BingoUpdated = Pick<
 >
 type NewBingo = Pick<Bingo, 'userId' | 'title' | 'gridSize'>
 
+type BingoDetailUpdate = Pick<BingoDetail, 'id' | 'bingoId' | 'participantName'>
+
 const bingosAdapter = createEntityAdapter<Bingo>({
   sortComparer: (a, b) =>
     new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
 })
 
-const detailsAdapter = createEntityAdapter<BingoDetail>()
+const detailsAdapter = createEntityAdapter<BingoDetail>({
+  sortComparer: (a, b) => a.cellNumber - b.cellNumber,
+})
 
 export const fetchBingos = createAppAsyncThunk(
   'bingos/fetchBingos',
@@ -95,8 +99,7 @@ export const fetchBingoDetails = createAppAsyncThunk(
     )
 
     const result = await response.json()
-    console.log(result, 'json')
-    console.log(response.status, response.ok, 'res')
+
     if (!response.ok) {
       throw new Error(`Response status: ${response.statusText}`)
     }
@@ -114,6 +117,30 @@ export const fetchBingoDetails = createAppAsyncThunk(
       }
       return true
     },
+  }
+)
+
+export const updateBingoCell = createAppAsyncThunk(
+  'bingos/updateBingoCell',
+  async ({ id: detailId, bingoId, participantName }: BingoDetailUpdate) => {
+    const response = await fetch(
+      `http://localhost:3000/bingos/${bingoId}/details/${detailId}/cell`,
+      {
+        method: 'POST',
+        body: JSON.stringify({ participantName }),
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.statusText}`)
+    }
+
+    return result
   }
 )
 
@@ -162,6 +189,13 @@ const bingosSlice = createSlice({
         state.detailStatus = 'failed'
         state.currentBingoId = action.meta.arg
         state.error = action.error.message ?? 'Unknown Error'
+      })
+      .addCase(updateBingoCell.fulfilled, (state, action) => {
+        console.log(action.payload)
+        detailsAdapter.updateOne(state.details, {
+          id: Number(action.payload.id),
+          changes: action.payload,
+        })
       })
   },
 })

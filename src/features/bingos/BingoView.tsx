@@ -6,7 +6,9 @@ import {
   Box,
   Chip,
   Container,
+  Paper,
   Stack,
+  TextField,
   Typography,
 } from '@mui/material'
 import NumbersIcon from '@mui/icons-material/Numbers'
@@ -17,6 +19,7 @@ import {
   selectAllDetails,
   selectDetailsStatus,
   selectDetailsError,
+  fetchBingos,
   fetchBingoDetails,
   selectBingosById,
   selectTakenCount,
@@ -25,21 +28,27 @@ import {
 const BingoView = () => {
   const dispatch = useAppDispatch()
   const details = useAppSelector(selectAllDetails)
-  console.log(details[0], 'details')
   const detailStatus = useAppSelector(selectDetailsStatus)
   const detailError = useAppSelector(selectDetailsError)
   const takenBingoSquares = useAppSelector(selectTakenCount)
-  console.log('taken', takenBingoSquares)
 
   const { id } = useParams()
   const numericId = Number(id)
   const bingo = useAppSelector((state) => selectBingosById(state, numericId))
 
   useEffect(() => {
+    if (!bingo) {
+      dispatch(fetchBingos())
+    }
     dispatch(fetchBingoDetails(numericId))
+    console.log('effect called')
   }, [numericId, dispatch])
 
   let content: React.ReactNode
+
+  if (!bingo) {
+    return <h3>Loading bingo</h3>
+  }
 
   if (detailStatus === 'pending') {
     content = <h3>Loading</h3>
@@ -51,28 +60,44 @@ const BingoView = () => {
 
   return (
     <Container>
-      <Box sx={{ display: 'flex', justifyContent: 'space-between' }}>
-        <Typography variant="h6">{bingo.title}</Typography>
+      <Box
+        sx={{
+          display: 'flex',
+          justifyContent: 'space-between',
+          mb: 1,
+          fontWeight: 500,
+        }}
+      >
+        <Typography variant="inherit">{bingo.title}</Typography>
         <Stack direction="row" spacing={2}>
-          <Badge
-            badgeContent={bingo.gridSize - takenBingoSquares}
-            color="secondary"
+          <Stack
+            spacing={0.5}
+            direction="row"
+            sx={{ display: 'flex', alignItems: 'center' }}
           >
-            <NumbersIcon color="action" />
-          </Badge>
-          <Badge badgeContent={takenBingoSquares.toString()} color="warning">
-            <NumbersIcon color="action" />
-          </Badge>
-          <Badge
-            badgeContent={bingo.gridSize}
-            color="primary"
-            aria-label="number of squares"
+            <Typography variant="subtitle2" sx={{ color: 'primary.main' }}>
+              Available:
+            </Typography>
+            <Typography variant="inherit">
+              {bingo.gridSize - takenBingoSquares}
+            </Typography>
+          </Stack>
+          <Stack
+            spacing={1}
+            direction="row"
+            sx={{ display: 'flex', alignItems: 'center' }}
           >
-            <NumbersIcon color="action" />
-          </Badge>
+            <Typography variant="subtitle2" sx={{ color: 'GrayText' }}>
+              Taken:
+            </Typography>
+            <Typography variant="inherit">{takenBingoSquares}</Typography>
+          </Stack>
         </Stack>
       </Box>
-      {content}
+
+      <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
+        {content}
+      </Paper>
     </Container>
   )
 }
