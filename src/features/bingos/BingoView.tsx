@@ -42,7 +42,7 @@ const BingoView = () => {
     }
     dispatch(fetchBingoDetails(numericId))
     console.log('effect called')
-  }, [numericId, dispatch])
+  }, [numericId, bingo, dispatch])
 
   let content: React.ReactNode
 
