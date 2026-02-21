@@ -9,28 +9,6 @@ const theme = createTheme({
       default: '#F4F8FF',
       paper: '#FFFFFF',
     },
-
-    primary: {
-      main: blue[500],
-      light: '#E8F3FF',
-      dark: blue[600],
-    },
-
-    success: {
-      main: green[900],
-    },
-
-    secondary: {
-      main: '#7ED957',
-    },
-
-    text: {
-      primary: '#1F2937',
-      secondary: '#6B7280',
-      disabled: '#9CA3AF',
-    },
-
-    divider: '#E3EAF5',
   },
 
   shape: {

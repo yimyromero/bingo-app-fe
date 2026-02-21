@@ -49,7 +49,7 @@ const BingoCard = ({ ...card }: BingoCardType) => {
           <Chip
             size="small"
             label={`${!card.isDone ? 'active' : 'finished'}`}
-            color={`${!card.isDone ? 'success' : 'error'}`}
+            color={`${!card.isDone ? 'primary' : 'error'}`}
             variant="outlined"
           />
           <Box>
@@ -98,13 +98,9 @@ const BingoCard = ({ ...card }: BingoCardType) => {
       }
     >
       <ListItemText
-        primary={
-          <Typography component="div" sx={{ fontWeight: 600 }}>
-            {card.title}
-          </Typography>
-        }
+        primary={<Typography sx={{ fontWeight: 600 }}>{card.title}</Typography>}
         secondary={
-          <Box>
+          <>
             <Typography
               component="time"
               variant="body2"
@@ -112,8 +108,14 @@ const BingoCard = ({ ...card }: BingoCardType) => {
             >
               {card.raffleDate}
             </Typography>
-            <Typography># {card.gridSize}</Typography>
-          </Box>
+            <Typography
+              component="span"
+              variant="body2"
+              sx={{ display: 'block' }}
+            >
+              # {card.gridSize}
+            </Typography>
+          </>
         }
       ></ListItemText>
     </ListItem>
