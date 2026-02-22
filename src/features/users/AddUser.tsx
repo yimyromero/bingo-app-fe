@@ -77,6 +77,7 @@ const AddUser = () => {
               label="Password"
               name="password"
               type="password"
+              autoComplete="current-password"
               fullWidth
               required
             />
