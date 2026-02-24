@@ -1,7 +1,9 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../../store'
 import { createAppAsyncThunk } from '../../withTypes'
-
+import { selectCurrentToken } from '../auth/authApiSlice'
+//import { store, type AppStore } from '../../store'
+import { useSelector } from 'react-redux'
 export interface User {
   id: number
   email: string
@@ -25,9 +27,12 @@ interface UsersState {
 
 export const fetchUsers = createAppAsyncThunk(
   'users/fetchUsers',
-  async () => {
+  async (_, thunkApi) => {
+    const token = thunkApi.getState().auth.token
+    if (!token) throw new Error('No token')
     const response = await fetch('http://localhost:3000/users', {
       method: 'GET',
+      headers: { authorization: `Bearer ${token}` },
     })
     const result = await response.json()
     if (!response.ok) {

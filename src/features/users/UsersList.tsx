@@ -2,6 +2,8 @@ import React, { useEffect } from 'react'
 import { useAppSelector, useAppDispatch } from '../../hooks/hooks'
 import { Button, List, Stack, Typography } from '@mui/material'
 import { Link } from 'react-router'
+import { useSelector } from 'react-redux'
+import { selectCurrentToken } from '../auth/authApiSlice'
 
 import {
   type User,

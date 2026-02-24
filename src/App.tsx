@@ -12,12 +12,14 @@ import { UsersList } from './features/users/UsersList'
 import AddUser from './features/users/AddUser'
 import AddBingo from './features/bingos/AddBingo'
 import BingoView from './features/bingos/BingoView'
+import { Login } from './features/auth/login'
 
 const App = () => {
   return (
     <ThemeProvider theme={theme}>
       <Routes>
         <Route path="/" element={<Public />} />
+        <Route path="/login" element={<Login />} />
         <Route path="dash" element={<MainLayout />}>
           <Route path="bingos">
             <Route index element={<BingosList />} />
