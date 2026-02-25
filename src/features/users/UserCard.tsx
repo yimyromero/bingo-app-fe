@@ -23,7 +23,7 @@ const UserCard = ({ ...user }: UserCardType) => {
     <ListItem
       sx={{
         background: 'Background',
-        borderRadius: 2,
+        borderRadius: 1,
       }}
       key={user.id}
       secondaryAction={
@@ -45,28 +45,11 @@ const UserCard = ({ ...user }: UserCardType) => {
       }
     >
       <ListItemText
-        primary={
-          <Typography component="div" sx={{ fontWeight: 600 }}>
-            {user.name}
-          </Typography>
-        }
+        primary={<Typography sx={{ fontWeight: 600 }}>{user.name}</Typography>}
         secondary={
-          <Box>
-            <Typography
-              component="desc"
-              variant="body2"
-              sx={{ color: 'text.secondary' }}
-            >
-              {user.email}
-            </Typography>
-            <Typography
-              variant="body2"
-              aria-label="user roles"
-              component="details"
-            >
-              Roles: {user.roles}
-            </Typography>
-          </Box>
+          <Typography variant="body2" sx={{ color: 'text.secondary' }}>
+            {user.email}
+          </Typography>
         }
       ></ListItemText>
     </ListItem>

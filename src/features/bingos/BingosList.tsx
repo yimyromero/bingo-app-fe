@@ -16,7 +16,6 @@ import type { BingoCardType } from './BingoCard'
 export const BingosList = () => {
   const dispatch = useAppDispatch()
   const bingos = useAppSelector(selectAllBingos)
-  console.log(bingos, 'bingos')
   const bingoStatus = useAppSelector(selectBingoStatus)
   const bingosError = useAppSelector(selectBingosError)
 

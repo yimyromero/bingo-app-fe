@@ -35,11 +35,7 @@ export const UsersList = () => {
     const orderedUsers = users
       .slice()
       .sort((a, b) => a.name.localeCompare(b.name))
-    content = orderedUsers.map((user) => (
-      <List>
-        <UserCard {...user} />
-      </List>
-    ))
+    content = orderedUsers.map((user) => <UserCard key={user.id} {...user} />)
   } else if (userStatus === 'rejected') {
     content = <div>{usersError}</div>
   }
@@ -55,8 +51,9 @@ export const UsersList = () => {
           New user
         </Button>
       </Stack>
-
-      {content}
+      <List sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        {content}
+      </List>
     </section>
   )
 }

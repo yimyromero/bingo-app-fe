@@ -1,6 +1,13 @@
 import { useState } from 'react'
+import { format, formatDate } from 'date-fns'
 import { Link } from 'react-router'
-import { MoreHoriz, ShapeLine } from '@mui/icons-material'
+import {
+  Event,
+  GridOn,
+  GridView,
+  MoreHoriz,
+  ShapeLine,
+} from '@mui/icons-material'
 import {
   Box,
   Chip,
@@ -19,7 +26,7 @@ export interface BingoCardType {
   id: number
   title: string
   gridSize: number
-  raffleDate?: string
+  raffleDate: string
   isDone?: boolean
 }
 
@@ -33,11 +40,13 @@ const BingoCard = ({ ...card }: BingoCardType) => {
     setAnchorElUser(event.currentTarget)
   }
 
+  const raffleDate = formatDate(new Date(card.raffleDate), 'PPP')
+
   return (
     <ListItem
       sx={{
         background: 'Background',
-        borderRadius: 2,
+        borderRadius: 1,
         mb: 2,
       }}
       secondaryAction={
@@ -101,20 +110,26 @@ const BingoCard = ({ ...card }: BingoCardType) => {
         primary={<Typography sx={{ fontWeight: 600 }}>{card.title}</Typography>}
         secondary={
           <>
-            <Typography
-              component="time"
-              variant="body2"
-              sx={{ color: 'text.secondary' }}
-            >
-              {card.raffleDate}
-            </Typography>
-            <Typography
-              component="span"
-              variant="body2"
-              sx={{ display: 'block' }}
-            >
-              # {card.gridSize}
-            </Typography>
+            <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
+              <Event sx={{ fontSize: 16 }} />
+              <Typography
+                component="time"
+                variant="body2"
+                sx={{ color: 'text.secondary' }}
+              >
+                {raffleDate}
+              </Typography>
+            </Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+              <GridOn sx={{ fontSize: 14 }} />
+              <Typography
+                component="span"
+                variant="body2"
+                sx={{ display: 'block' }}
+              >
+                {card.gridSize}
+              </Typography>
+            </Box>
           </>
         }
       ></ListItemText>
