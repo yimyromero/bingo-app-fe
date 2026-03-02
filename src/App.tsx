@@ -12,8 +12,8 @@ import { UsersList } from './features/users/UsersList'
 import AddUser from './features/users/AddUser'
 import AddBingo from './features/bingos/AddBingo'
 import BingoView from './features/bingos/BingoView'
-import { Login } from './features/auth/login'
-import { RequiredAuth } from './features/auth/requiredAuth'
+import { Login } from './features/auth/Login'
+import { RequiredAuth } from './features/auth/RequiredAuth'
 
 const App = () => {
   return (

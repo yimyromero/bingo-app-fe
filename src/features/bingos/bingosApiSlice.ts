@@ -8,6 +8,8 @@ import {
 import type { RootState } from '../../store'
 import { createAppAsyncThunk } from '../../withTypes'
 
+const baseUrl = import.meta.env.VITE_API_BASE_URL
+
 type Status = 'idle' | 'pending' | 'succeeded' | 'failed'
 export interface Bingo {
   id: number
@@ -45,9 +47,11 @@ const detailsAdapter = createEntityAdapter<BingoDetail>({
 
 export const fetchBingos = createAppAsyncThunk(
   'bingos/fetchBingos',
-  async () => {
-    const response = await fetch('http://localhost:3000/bingos', {
+  async (_, thunkApi) => {
+    const token = thunkApi.getState().auth.token
+    const response = await fetch(`${baseUrl}/bingos`, {
       method: 'GET',
+      headers: { authorization: `Bearer ${token}` },
     })
     const result = await response.json()
     if (!response.ok) {
@@ -68,12 +72,14 @@ export const fetchBingos = createAppAsyncThunk(
 
 export const addNewBingo = createAppAsyncThunk(
   'bingos/addNewBingo',
-  async (initialBingo: NewBingo) => {
-    const response = await fetch('http://localhost:3000/bingos', {
+  async (initialBingo: NewBingo, thunkApi) => {
+    const token = thunkApi.getState().auth.token
+    const response = await fetch(`${baseUrl}/bingos`, {
       method: 'POST',
       body: JSON.stringify(initialBingo),
       headers: {
         'Content-Type': 'application/json',
+        authorization: `Bearer ${token}`,
       },
     })
 
@@ -90,13 +96,14 @@ export const addNewBingo = createAppAsyncThunk(
 // Get bingo details
 export const fetchBingoDetails = createAppAsyncThunk(
   'bingos/getBingoDetails',
-  async (bingoId: number) => {
-    const response = await fetch(
-      `http://localhost:3000/bingos/${bingoId}/details`,
-      {
-        method: 'GET',
-      }
-    )
+  async (bingoId: number, thunkApi) => {
+    const token = thunkApi.getState().auth.token
+    const response = await fetch(`${baseUrl}/bingos/${bingoId}/details`, {
+      method: 'GET',
+      headers: {
+        authorization: `Bearer ${token}`,
+      },
+    })
 
     const result = await response.json()
 
@@ -124,7 +131,7 @@ export const updateBingoCell = createAppAsyncThunk(
   'bingos/updateBingoCell',
   async ({ id: detailId, bingoId, participantName }: BingoDetailUpdate) => {
     const response = await fetch(
-      `http://localhost:3000/bingos/${bingoId}/details/${detailId}/cell`,
+      `${baseUrl}/bingos/${bingoId}/details/${detailId}/cell`,
       {
         method: 'POST',
         body: JSON.stringify({ participantName }),

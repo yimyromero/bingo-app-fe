@@ -3,7 +3,7 @@ import { GridOn } from '@mui/icons-material'
 import { useState, type ChangeEvent } from 'react'
 import { useAppDispatch } from '../../hooks/hooks'
 import { login } from '../auth/authApiSlice'
-import { useNavigate, useLocation } from 'react-router'
+import { useNavigate, useLocation, replace } from 'react-router'
 
 interface LoginFormFields extends HTMLFormControlsCollection {
   email: HTMLInputElement
@@ -35,11 +35,13 @@ const Login = () => {
       const { accessToken } = await dispatch(
         login({ email, passwordHash: password })
       ).unwrap()
-      const redirectToOrigin = location.state.from.pathname || '/dash'
-      navigate(redirectToOrigin)
+      const redirectToOrigin = location.state
+        ? location.state.from.pathname
+        : '/dash'
+      navigate({ pathname: redirectToOrigin }, { replace: true })
       //form.reset()
     } catch (err) {
-      console.error('Failed to save the bingo:', err)
+      console.error('Issue logging in', err)
     }
   }
 

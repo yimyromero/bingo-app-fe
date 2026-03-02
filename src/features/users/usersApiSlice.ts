@@ -1,9 +1,9 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../../store'
 import { createAppAsyncThunk } from '../../withTypes'
-import { selectCurrentToken } from '../auth/authApiSlice'
-//import { store, type AppStore } from '../../store'
-import { useSelector } from 'react-redux'
+
+const baseUrl = import.meta.env.VITE_API_BASE_URL
+
 export interface User {
   id: number
   email: string
@@ -30,7 +30,7 @@ export const fetchUsers = createAppAsyncThunk(
   async (_, thunkApi) => {
     const token = thunkApi.getState().auth.token
     if (!token) throw new Error('No token')
-    const response = await fetch('http://localhost:3000/users', {
+    const response = await fetch(`${baseUrl}/users`, {
       method: 'GET',
       headers: { authorization: `Bearer ${token}` },
     })
@@ -53,9 +53,10 @@ export const fetchUsers = createAppAsyncThunk(
 
 export const addNewUser = createAppAsyncThunk(
   'users/addNewUser',
-  async (initialUser: NewUser) => {
+  async (initialUser: NewUser, thunkApi) => {
+    const token = thunkApi.getState().auth.token
     const { passwordHash, ...rest } = initialUser
-    const response = await fetch('http://localhost:3000/users', {
+    const response = await fetch(`${baseUrl}/users`, {
       method: 'POST',
       body: JSON.stringify({
         ...rest,
@@ -63,6 +64,7 @@ export const addNewUser = createAppAsyncThunk(
       }),
       headers: {
         'Content-Type': 'application/json',
+        authorization: `Bearer ${token}`,
       },
     })
     const result = await response.json()

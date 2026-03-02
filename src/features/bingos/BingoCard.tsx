@@ -1,8 +1,8 @@
-import { useState } from 'react'
+import { Component, useState } from 'react'
 import { format, formatDate } from 'date-fns'
 import { Link } from 'react-router'
 import {
-  Event,
+  Event as EventIcon,
   GridOn,
   GridView,
   MoreHoriz,
@@ -107,11 +107,12 @@ const BingoCard = ({ ...card }: BingoCardType) => {
       }
     >
       <ListItemText
+        disableTypography={true}
         primary={<Typography sx={{ fontWeight: 600 }}>{card.title}</Typography>}
         secondary={
           <>
             <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
-              <Event sx={{ fontSize: 16 }} />
+              <EventIcon sx={{ fontSize: 16 }} />
               <Typography
                 component="time"
                 variant="body2"
