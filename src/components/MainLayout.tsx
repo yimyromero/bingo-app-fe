@@ -19,9 +19,10 @@ import Drawer from '@mui/material/Drawer'
 import Box from '@mui/material/Box'
 import { useState } from 'react'
 import CssBaseline from '@mui/material/CssBaseline'
-import { AppBar, IconButton, Typography } from '@mui/material'
-import { Link, Outlet } from 'react-router'
-import { NavLink } from 'react-router'
+import { AppBar, Button, IconButton, Typography } from '@mui/material'
+import { NavLink, Outlet, replace, useNavigate } from 'react-router'
+import { useAppDispatch } from '../hooks/hooks'
+import { logout } from '../features/auth/authApiSlice'
 
 const drawerWidth = 240
 const primaryMenuOptions = [
@@ -41,7 +42,10 @@ const primaryMenuOptions = [
     icon: <ListIcon />,
   },
 ]
-const secondaryIconOptions = [<AccountSettingsIcons />, <LogoutIcon />]
+const secondaryMenuOptions = [
+  { text: 'Account', path: '/account', icon: <AccountSettingsIcons /> },
+  { text: 'Logout', action: 'logout', icon: <LogoutIcon /> },
+]
 
 const MainLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false)
@@ -72,6 +76,20 @@ const MainLayout = () => {
     setAnchorElUser(null)
   }
 
+  const navigate = useNavigate()
+  const dispatch = useAppDispatch()
+
+  const handleLogout = async () => {
+    try {
+      const loggedOut = await dispatch(logout())
+      if (loggedOut) {
+        navigate('/login', { replace: true })
+      }
+    } catch (err) {
+      console.error('Something went wrong logging out', err)
+    }
+  }
+
   const drawer = (
     <div>
       <Toolbar />
@@ -100,11 +118,23 @@ const MainLayout = () => {
       </List>
       <Divider />
       <List>
-        {['Account Settings', 'Logout'].map((text, index) => (
-          <ListItem key={text} disablePadding>
-            <ListItemButton>
-              <ListItemIcon>{secondaryIconOptions[index]}</ListItemIcon>
-              <ListItemText primary={text} />
+        {secondaryMenuOptions.map((option) => (
+          <ListItem key={option.text} disablePadding>
+            <ListItemButton
+              component={option.path ? NavLink : 'button'}
+              to={option.path}
+              onClick={option.action === 'logout' ? handleLogout : undefined}
+              sx={{
+                '&.active': {
+                  backgroundColor: 'action.selected',
+                  '& .MuiListItemIcon-root': {
+                    color: 'primary.main',
+                  },
+                },
+              }}
+            >
+              <ListItemIcon>{option.icon}</ListItemIcon>
+              <ListItemText primary={option.text} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -175,12 +205,19 @@ const MainLayout = () => {
                 open={Boolean(anchorElUser)}
                 onClose={handleCloseUserMenu}
               >
-                {settings.map((setting) => (
-                  <MenuItem key={setting} onClick={handleCloseUserMenu}>
-                    <Typography sx={{ textAlign: 'center' }}>
-                      {setting}
-                    </Typography>
-                  </MenuItem>
+                {secondaryMenuOptions.map((option) => (
+                  <ListItem key={option.text} disablePadding>
+                    <ListItemButton
+                      component={option.path ? NavLink : 'button'}
+                      to={option.path}
+                      onClick={
+                        option.action === 'logout' ? handleLogout : undefined
+                      }
+                    >
+                      <ListItemIcon>{option.icon}</ListItemIcon>
+                      <ListItemText primary={option.text} />
+                    </ListItemButton>
+                  </ListItem>
                 ))}
               </Menu>
             </Box>

@@ -129,7 +129,11 @@ export const fetchBingoDetails = createAppAsyncThunk(
 
 export const updateBingoCell = createAppAsyncThunk(
   'bingos/updateBingoCell',
-  async ({ id: detailId, bingoId, participantName }: BingoDetailUpdate) => {
+  async (
+    { id: detailId, bingoId, participantName }: BingoDetailUpdate,
+    thunkApi
+  ) => {
+    const token = thunkApi.getState().auth.token
     const response = await fetch(
       `${baseUrl}/bingos/${bingoId}/details/${detailId}/cell`,
       {
@@ -137,6 +141,7 @@ export const updateBingoCell = createAppAsyncThunk(
         body: JSON.stringify({ participantName }),
         headers: {
           'Content-Type': 'application/json',
+          authorization: `Bearer ${token}`,
         },
       }
     )

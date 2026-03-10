@@ -2,6 +2,7 @@ import { createSlice } from '@reduxjs/toolkit'
 import { createAppAsyncThunk } from '../../withTypes'
 import type { User } from '../users/usersApiSlice'
 import type { RootState } from '../../store'
+import { add } from 'date-fns'
 
 type Status = 'idle' | 'pending' | 'succeeded' | 'failed'
 
@@ -34,6 +35,22 @@ export const login = createAppAsyncThunk(
   }
 )
 
+export const logout = createAppAsyncThunk('auth/logout', async () => {
+  const response = await fetch(`http://localhost:3000/auth/logout`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    credentials: 'include',
+  })
+
+  if (!response.ok) {
+    throw new Error(`Response status: ${response.statusText}`)
+  }
+
+  return true
+})
+
 const initialState: TokenState = {
   token: null,
   status: 'idle',
@@ -43,7 +60,13 @@ const initialState: TokenState = {
 const authSlice = createSlice({
   name: 'auth',
   initialState,
-  reducers: {},
+  reducers: {
+    logout: (state) => {
+      state.token = null
+      state.status = 'idle'
+      state.error = null
+    },
+  },
   extraReducers: (builder) => {
     builder
       .addCase(login.pending, (state, action) => {
