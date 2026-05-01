@@ -51,7 +51,6 @@ const MainLayout = () => {
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
-  const settings = ['Account', 'Logout']
 
   const handleDrawerClose = () => {
     setIsClosing(true)

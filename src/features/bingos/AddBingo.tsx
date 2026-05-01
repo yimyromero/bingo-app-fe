@@ -1,16 +1,25 @@
 import { Box, Paper, Typography, TextField, Button, Stack } from '@mui/material'
 import { useState } from 'react'
+import { jwtDecode, type JwtPayload } from 'jwt-decode'
 import { useAppDispatch, useAppSelector } from '../../hooks/hooks'
+import { selectCurrentToken } from '../auth/authApiSlice'
 import { addNewBingo } from './bingosApiSlice'
 
 interface AddNewFormFields extends HTMLFormControlsCollection {
   userId: HTMLInputElement
   title: HTMLInputElement
-  gridSize: HTMLInputElement
+  quantity: HTMLInputElement
 }
 
 interface AddBingoFormElements extends HTMLFormElement {
   readonly elements: AddNewFormFields
+}
+
+interface UserInfoPayLoad extends JwtPayload {
+  userInfo: {
+    id: string
+    role: string
+  }
 }
 
 const AddBingo = () => {
@@ -19,28 +28,33 @@ const AddBingo = () => {
   >('idle')
 
   const dispatch = useAppDispatch()
-
+  const token = useAppSelector(selectCurrentToken)
   const handleSubmit = async (
     event: React.SubmitEvent<AddBingoFormElements>
   ) => {
     event.preventDefault()
 
-    const { elements } = event.currentTarget
+    if (token) {
+      const decoded = jwtDecode<UserInfoPayLoad>(token)
+      const { id, role } = decoded.userInfo
 
-    const userId = Number(elements.userId.value)
-    const title = elements.title.value
-    const gridSize = Number(elements.gridSize.value)
+      const { elements } = event.currentTarget
 
-    const form = event.currentTarget
+      const userId = Number(id)
+      const title = elements.title.value
+      const gridSize = Number(elements.quantity.value)
 
-    try {
-      setAddRequestedStatus('pending')
-      await dispatch(addNewBingo({ userId, title, gridSize })).unwrap()
-      form.reset()
-    } catch (err) {
-      console.error('Failed to save the bingo:', err)
-    } finally {
-      setAddRequestedStatus('idle')
+      const form = event.currentTarget
+
+      try {
+        setAddRequestedStatus('pending')
+        await dispatch(addNewBingo({ userId, title, gridSize })).unwrap()
+        form.reset()
+      } catch (err) {
+        console.error('Failed to save the bingo:', err)
+      } finally {
+        setAddRequestedStatus('idle')
+      }
     }
   }
 
@@ -49,31 +63,28 @@ const AddBingo = () => {
       sx={{
         display: 'flex',
         justifyContent: 'center',
-        mt: 6,
+        mt: 2,
       }}
     >
       <Paper
-        elevation={1}
+        elevation={0}
         sx={{
           p: 4,
-          width: 400,
+          width: '100%',
         }}
       >
         <Typography variant="h5" mb={3}>
           New Bingo
         </Typography>
 
-        <Box component="form" onSubmit={handleSubmit}>
-          <Stack spacing={3}>
+        <Box
+          component="form"
+          onSubmit={handleSubmit}
+          sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+        >
+          <Stack spacing={2} direction="row">
             <TextField
-              label="User id (temp)"
-              name="userId"
-              type="text"
-              fullWidth
-              required
-            />
-
-            <TextField
+              size="small"
               label="Title"
               name="title"
               type="text"
@@ -82,22 +93,40 @@ const AddBingo = () => {
             />
 
             <TextField
+              size="small"
               label="Quantity"
-              name="gridSize"
+              name="quantity"
               type="text"
+              required
+            />
+          </Stack>
+          <Stack spacing={2}>
+            <TextField
+              size="small"
+              label="Price"
+              name="price"
+              type="currency"
               fullWidth
               required
             />
-
-            <Button
-              type="submit"
-              variant="contained"
-              color="primary"
-              size="large"
-            >
-              Save
-            </Button>
           </Stack>
+          <Box>
+            <Typography sx={{ fontSize: 'large', fontWeight: 'medium' }}>
+              Prizes
+            </Typography>
+            <Stack>
+              <TextField size="small" label="Prize" name="prize" type="text" />
+            </Stack>
+          </Box>
+
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            size="large"
+          >
+            Save
+          </Button>
         </Box>
       </Paper>
     </Box>
