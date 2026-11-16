@@ -12,7 +12,9 @@ import { UsersList } from './features/users/UsersList'
 import AddUser from './features/users/AddUser'
 import AddBingo from './features/bingos/AddBingo'
 import BingoView from './features/bingos/BingoView'
+import AccountPage from './features/account/AccountPage'
 import { Login } from './features/auth/Login'
+import { ResetPassword } from './features/auth/ResetPassword'
 import { RequiredAuth } from './features/auth/RequiredAuth'
 
 const App = () => {
@@ -21,6 +23,7 @@ const App = () => {
       <Routes>
         <Route path="/" element={<Public />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         <Route element={<RequiredAuth />}>
           <Route path="dash" element={<MainLayout />}>
             <Route path="bingos">
@@ -29,6 +32,7 @@ const App = () => {
               <Route path="new" element={<AddBingo />} />
               <Route path=":id/view" element={<BingoView />} />
             </Route>
+            <Route path="account" element={<AccountPage />} />
             <Route path="users">
               <Route index element={<UsersList />} />
               <Route path=":id" />

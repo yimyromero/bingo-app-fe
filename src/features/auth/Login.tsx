@@ -1,4 +1,12 @@
-import { Box, Button, Stack, TextField, Typography } from '@mui/material'
+import {
+  Box,
+  Button,
+  Checkbox,
+  FormControlLabel,
+  Stack,
+  TextField,
+  Typography,
+} from '@mui/material'
 import { GridOn } from '@mui/icons-material'
 import { useState, type ChangeEvent } from 'react'
 import { useAppDispatch } from '../../hooks/hooks'
@@ -17,6 +25,7 @@ interface LoginFormElement extends HTMLFormElement {
 const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [rememberMe, setRememberMe] = useState(false)
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -33,7 +42,7 @@ const Login = () => {
     try {
       //setAddRequestedStatus('pending')
       const { accessToken } = await dispatch(
-        login({ email, passwordHash: password })
+        login({ email, passwordHash: password, rememberMe })
       ).unwrap()
       const redirectToOrigin = location.state
         ? location.state.from.pathname
@@ -100,6 +109,15 @@ const Login = () => {
               required
               value={password}
               onChange={handlePasswordInput}
+            />
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={rememberMe}
+                  onChange={(e) => setRememberMe(e.target.checked)}
+                />
+              }
+              label="Keep me signed in"
             />
             <Button type="submit" variant="contained" size="large">
               Login

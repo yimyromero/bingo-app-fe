@@ -1,8 +1,7 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit'
 import type { RootState } from '../../store'
 import { createAppAsyncThunk } from '../../withTypes'
-
-const baseUrl = import.meta.env.VITE_API_BASE_URL
+import { authFetch } from '../../api/authFetch'
 
 export interface User {
   id: number
@@ -11,6 +10,7 @@ export interface User {
   name: string
   roles: string
   active: boolean
+  created_at?: string | null
 }
 
 type UserUpdated = Pick<
@@ -28,11 +28,8 @@ interface UsersState {
 export const fetchUsers = createAppAsyncThunk(
   'users/fetchUsers',
   async (_, thunkApi) => {
-    const token = thunkApi.getState().auth.token
-    if (!token) throw new Error('No token')
-    const response = await fetch(`${baseUrl}/users`, {
+    const response = await authFetch(thunkApi, `/users`, {
       method: 'GET',
-      headers: { authorization: `Bearer ${token}` },
     })
     const result = await response.json()
     if (!response.ok) {
@@ -54,9 +51,8 @@ export const fetchUsers = createAppAsyncThunk(
 export const addNewUser = createAppAsyncThunk(
   'users/addNewUser',
   async (initialUser: NewUser, thunkApi) => {
-    const token = thunkApi.getState().auth.token
     const { passwordHash, ...rest } = initialUser
-    const response = await fetch(`${baseUrl}/users`, {
+    const response = await authFetch(thunkApi, `/users`, {
       method: 'POST',
       body: JSON.stringify({
         ...rest,
@@ -64,7 +60,6 @@ export const addNewUser = createAppAsyncThunk(
       }),
       headers: {
         'Content-Type': 'application/json',
-        authorization: `Bearer ${token}`,
       },
     })
     const result = await response.json()
@@ -72,6 +67,41 @@ export const addNewUser = createAppAsyncThunk(
       throw new Error(`Response status: ${response.statusText}`)
     }
     return result.data
+  }
+)
+
+// Activate or deactivate an account (admin only)
+export const updateUserStatus = createAppAsyncThunk(
+  'users/updateUserStatus',
+  async ({ id, active }: { id: number; active: boolean }, thunkApi) => {
+    const response = await authFetch(thunkApi, `/users/${id}/status`, {
+      method: 'PATCH',
+      body: JSON.stringify({ active }),
+      headers: { 'Content-Type': 'application/json' },
+    })
+    const result = await response.json()
+    if (!response.ok) {
+      throw new Error(result?.message ?? 'Could not update the account.')
+    }
+    return {
+      ...(result.data as { id: number; active: boolean }),
+      message: result.message as string,
+    }
+  }
+)
+
+// Email a password reset link to the user (admin only)
+export const sendPasswordReset = createAppAsyncThunk(
+  'users/sendPasswordReset',
+  async (id: number, thunkApi) => {
+    const response = await authFetch(thunkApi, `/users/${id}/password-reset`, {
+      method: 'POST',
+    })
+    const result = await response.json()
+    if (!response.ok) {
+      throw new Error(result?.message ?? 'Could not send the reset email.')
+    }
+    return result.message as string
   }
 )
 
@@ -109,6 +139,12 @@ const usersSlice = createSlice({
       .addCase(fetchUsers.rejected, (state, action) => {
         state.status = 'rejected'
         state.error = action.error.message ?? 'Unknown Error'
+      })
+      .addCase(updateUserStatus.fulfilled, (state, action) => {
+        const user = state.users.find((u) => u.id === action.payload.id)
+        if (user) {
+          user.active = action.payload.active
+        }
       })
       .addCase(addNewUser.fulfilled, (state, action) => {
         state.users.push(action.payload)

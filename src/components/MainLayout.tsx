@@ -22,7 +22,9 @@ import CssBaseline from '@mui/material/CssBaseline'
 import { AppBar, Button, IconButton, Typography } from '@mui/material'
 import { NavLink, Outlet, replace, useNavigate } from 'react-router'
 import { useAppDispatch } from '../hooks/hooks'
-import { logout } from '../features/auth/authApiSlice'
+import { jwtDecode, type JwtPayload } from 'jwt-decode'
+import { useAppSelector } from '../hooks/hooks'
+import { logout, selectCurrentToken } from '../features/auth/authApiSlice'
 
 const drawerWidth = 240
 const primaryMenuOptions = [
@@ -43,11 +45,28 @@ const primaryMenuOptions = [
   },
 ]
 const secondaryMenuOptions = [
-  { text: 'Account', path: '/account', icon: <AccountSettingsIcons /> },
+  { text: 'Account', path: '/dash/account', icon: <AccountSettingsIcons /> },
   { text: 'Logout', action: 'logout', icon: <LogoutIcon /> },
 ]
 
+const isAdmin = (token: string | null) => {
+  if (!token) return false
+  try {
+    const { userInfo } = jwtDecode<JwtPayload & { userInfo: { role: string } }>(
+      token
+    )
+    return userInfo?.role === 'admin'
+  } catch {
+    return false
+  }
+}
+
 const MainLayout = () => {
+  const token = useAppSelector(selectCurrentToken)
+  // user management is admin only (the API enforces it too)
+  const visiblePrimaryOptions = primaryMenuOptions.filter(
+    (option) => option.path !== '/dash/users' || isAdmin(token)
+  )
   const [mobileOpen, setMobileOpen] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
@@ -94,7 +113,7 @@ const MainLayout = () => {
       <Toolbar />
       <Divider />
       <List>
-        {primaryMenuOptions.map((option, index) => (
+        {visiblePrimaryOptions.map((option) => (
           <ListItem key={option.text} disablePadding>
             <ListItemButton
               component={NavLink}

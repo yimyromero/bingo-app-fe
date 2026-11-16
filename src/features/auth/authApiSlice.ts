@@ -2,24 +2,31 @@ import { createSlice } from '@reduxjs/toolkit'
 import { createAppAsyncThunk } from '../../withTypes'
 import type { User } from '../users/usersApiSlice'
 import type { RootState } from '../../store'
-import { add } from 'date-fns'
+
+const baseUrl = import.meta.env.VITE_API_BASE_URL
 
 type Status = 'idle' | 'pending' | 'succeeded' | 'failed'
 
 interface TokenState {
   token: string | null
+  refreshing: boolean
+  sessionChecked: boolean
   status: Status
   error: string | null
 }
 
-type Login = Pick<User, 'email' | 'passwordHash'>
+type Login = Pick<User, 'email' | 'passwordHash'> & {
+  rememberMe?: boolean
+}
 
 export const login = createAppAsyncThunk(
   'auth/login',
-  async ({ email, passwordHash: password }: Login) => {
-    const response = await fetch(`http://localhost:3000/auth`, {
+  async ({ email, passwordHash: password, rememberMe }: Login) => {
+    const response = await fetch(`${baseUrl}/auth`, {
       method: 'POST',
-      body: JSON.stringify({ email, password }),
+      // credentials so the browser stores the refresh cookie
+      credentials: 'include',
+      body: JSON.stringify({ email, password, rememberMe }),
       headers: {
         'Content-Type': 'application/json',
       },
@@ -35,8 +42,51 @@ export const login = createAppAsyncThunk(
   }
 )
 
+// Ask the server for a new access token using the httpOnly refresh cookie
+export const refreshSession = createAppAsyncThunk(
+  'auth/refreshSession',
+  async () => {
+    const response = await fetch(`${baseUrl}/auth/refresh`, {
+      method: 'GET',
+      credentials: 'include',
+    })
+
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.statusText}`)
+    }
+
+    return (await response.json()) as { accessToken: string }
+  },
+  {
+    condition(_, thunkApi) {
+      return !thunkApi.getState().auth.refreshing
+    },
+  }
+)
+
+// Set a new password using the token from the reset email
+export const resetPassword = createAppAsyncThunk(
+  'auth/resetPassword',
+  async (body: {
+    token: string
+    newPassword: string
+    confirmPassword: string
+  }) => {
+    const response = await fetch(`${baseUrl}/auth/reset-password`, {
+      method: 'POST',
+      body: JSON.stringify(body),
+      headers: { 'Content-Type': 'application/json' },
+    })
+    const result = await response.json()
+    if (!response.ok) {
+      throw new Error(result?.message ?? 'Could not reset your password.')
+    }
+    return result.message as string
+  }
+)
+
 export const logout = createAppAsyncThunk('auth/logout', async () => {
-  const response = await fetch(`http://localhost:3000/auth/logout`, {
+  const response = await fetch(`${baseUrl}/auth/logout`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -53,6 +103,8 @@ export const logout = createAppAsyncThunk('auth/logout', async () => {
 
 const initialState: TokenState = {
   token: null,
+  refreshing: false,
+  sessionChecked: false,
   status: 'idle',
   error: null,
 }
@@ -75,12 +127,29 @@ const authSlice = createSlice({
       .addCase(login.fulfilled, (state, action) => {
         state.status = 'succeeded'
         state.token = action.payload.accessToken
+        state.sessionChecked = true
       })
       .addCase(login.rejected, (state, action) => {
         state.error = action.error.message ?? 'Unknown Error'
+      })
+      .addCase(refreshSession.pending, (state) => {
+        state.refreshing = true
+      })
+      .addCase(refreshSession.fulfilled, (state, action) => {
+        state.refreshing = false
+        state.sessionChecked = true
+        state.token = action.payload.accessToken
+      })
+      .addCase(refreshSession.rejected, (state) => {
+        // no valid refresh cookie: the session is over
+        state.refreshing = false
+        state.sessionChecked = true
+        state.token = null
       })
   },
 })
 
 export default authSlice.reducer
 export const selectCurrentToken = (state: RootState) => state.auth.token
+export const selectSessionChecked = (state: RootState) =>
+  state.auth.sessionChecked

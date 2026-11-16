@@ -2,12 +2,14 @@ import { configureStore, type Action } from '@reduxjs/toolkit'
 import { combineReducers, type UnknownAction } from 'redux'
 import bingosReducer from './features/bingos/bingosApiSlice'
 import usersReducer from './features/users/usersApiSlice'
+import accountReducer from './features/account/accountApiSlice'
 import authReducer, { logout } from './features/auth/authApiSlice'
 
 const appReducer = combineReducers({
   bingos: bingosReducer,
   users: usersReducer,
   auth: authReducer,
+  account: accountReducer,
 })
 
 const rootReducer = (

@@ -7,8 +7,7 @@ import {
 } from '@reduxjs/toolkit'
 import type { RootState } from '../../store'
 import { createAppAsyncThunk } from '../../withTypes'
-
-const baseUrl = import.meta.env.VITE_API_BASE_URL
+import { authFetch } from '../../api/authFetch'
 
 type Status = 'idle' | 'pending' | 'succeeded' | 'failed'
 export interface Bingo {
@@ -48,10 +47,8 @@ const detailsAdapter = createEntityAdapter<BingoDetail>({
 export const fetchBingos = createAppAsyncThunk(
   'bingos/fetchBingos',
   async (_, thunkApi) => {
-    const token = thunkApi.getState().auth.token
-    const response = await fetch(`${baseUrl}/bingos`, {
+    const response = await authFetch(thunkApi, `/bingos`, {
       method: 'GET',
-      headers: { authorization: `Bearer ${token}` },
     })
     const result = await response.json()
     if (!response.ok) {
@@ -73,13 +70,11 @@ export const fetchBingos = createAppAsyncThunk(
 export const addNewBingo = createAppAsyncThunk(
   'bingos/addNewBingo',
   async (initialBingo: NewBingo, thunkApi) => {
-    const token = thunkApi.getState().auth.token
-    const response = await fetch(`${baseUrl}/bingos`, {
+    const response = await authFetch(thunkApi, `/bingos`, {
       method: 'POST',
       body: JSON.stringify(initialBingo),
       headers: {
         'Content-Type': 'application/json',
-        authorization: `Bearer ${token}`,
       },
     })
 
@@ -96,13 +91,11 @@ export const addNewBingo = createAppAsyncThunk(
 export const updateBingo = createAppAsyncThunk(
   'bingos/updateBingo',
   async (bingo: BingoUpdated, thunkApi) => {
-    const token = thunkApi.getState().auth.token
-    const response = await fetch(`${baseUrl}/bingos`, {
+    const response = await authFetch(thunkApi, `/bingos`, {
       method: 'PATCH',
       body: JSON.stringify(bingo),
       headers: {
         'Content-Type': 'application/json',
-        authorization: `Bearer ${token}`,
       },
     })
 
@@ -120,12 +113,8 @@ export const updateBingo = createAppAsyncThunk(
 export const fetchBingoDetails = createAppAsyncThunk(
   'bingos/getBingoDetails',
   async (bingoId: number, thunkApi) => {
-    const token = thunkApi.getState().auth.token
-    const response = await fetch(`${baseUrl}/bingos/${bingoId}/details`, {
+    const response = await authFetch(thunkApi, `/bingos/${bingoId}/details`, {
       method: 'GET',
-      headers: {
-        authorization: `Bearer ${token}`,
-      },
     })
 
     const result = await response.json()
@@ -156,15 +145,14 @@ export const updateBingoCell = createAppAsyncThunk(
     { id: detailId, bingoId, participantName }: BingoDetailUpdate,
     thunkApi
   ) => {
-    const token = thunkApi.getState().auth.token
-    const response = await fetch(
-      `${baseUrl}/bingos/${bingoId}/details/${detailId}/cell`,
+    const response = await authFetch(
+      thunkApi,
+      `/bingos/${bingoId}/details/${detailId}/cell`,
       {
         method: 'POST',
         body: JSON.stringify({ participantName }),
         headers: {
           'Content-Type': 'application/json',
-          authorization: `Bearer ${token}`,
         },
       }
     )
