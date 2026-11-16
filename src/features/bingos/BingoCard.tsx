@@ -7,6 +7,7 @@ import {
   GridView,
   MoreHoriz,
   ShapeLine,
+  Edit as EditIcon,
 } from '@mui/icons-material'
 import {
   Box,
@@ -31,7 +32,7 @@ export interface BingoCardType {
 }
 
 const BingoCard = ({ ...card }: BingoCardType) => {
-  const settings = ['View', 'Edit']
+  const settings = ['Edit']
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
   const handleCloseUserMenu = () => {
     setAnchorElUser(null)
@@ -95,8 +96,9 @@ const BingoCard = ({ ...card }: BingoCardType) => {
                   <ListItemButton
                     component={Link}
                     to={`/dash/bingos/${card.id}/view`}
-                    sx={{ textAlign: 'center' }}
+                    sx={{ textAlign: 'center', gap: 0.5 }}
                   >
+                    <EditIcon sx={{ fontSize: 16 }} />
                     {setting}
                   </ListItemButton>
                 </ListItem>

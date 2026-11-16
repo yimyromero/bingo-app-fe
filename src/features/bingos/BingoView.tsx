@@ -5,7 +5,6 @@ import {
   Badge,
   Box,
   Chip,
-  Container,
   Paper,
   Stack,
   TextField,
@@ -13,6 +12,7 @@ import {
 } from '@mui/material'
 import NumbersIcon from '@mui/icons-material/Numbers'
 import BingoGrid from './BingoGrid'
+import BingoInfoForm from './BingoInfoForm'
 
 import { useAppDispatch, useAppSelector } from '../../hooks/hooks'
 import {
@@ -58,7 +58,8 @@ const BingoView = () => {
   }
 
   return (
-    <Container>
+    <Box sx={{ width: '100%' }}>
+      <BingoInfoForm key={bingo.id} bingo={bingo} />
       <Box
         sx={{
           display: 'flex',
@@ -67,7 +68,7 @@ const BingoView = () => {
           fontWeight: 500,
         }}
       >
-        <Typography variant="inherit">{bingo.title}</Typography>
+        <Typography variant="inherit">Squares</Typography>
         <Stack direction="row" spacing={2}>
           <Stack
             spacing={0.5}
@@ -97,7 +98,7 @@ const BingoView = () => {
       <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
         {content}
       </Paper>
-    </Container>
+    </Box>
   )
 }
 

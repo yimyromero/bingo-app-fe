@@ -30,7 +30,7 @@ export interface BingoDetail {
 
 type BingoUpdated = Pick<
   Bingo,
-  'id' | 'title' | 'gridSize' | 'raffleDate' | 'isDone'
+  'id' | 'userId' | 'title' | 'gridSize' | 'raffleDate' | 'isDone'
 >
 type NewBingo = Pick<Bingo, 'userId' | 'title' | 'gridSize'>
 
@@ -77,6 +77,29 @@ export const addNewBingo = createAppAsyncThunk(
     const response = await fetch(`${baseUrl}/bingos`, {
       method: 'POST',
       body: JSON.stringify(initialBingo),
+      headers: {
+        'Content-Type': 'application/json',
+        authorization: `Bearer ${token}`,
+      },
+    })
+
+    const result = await response.json()
+
+    if (!response.ok) {
+      throw new Error(`Response status: ${response.statusText}`)
+    }
+
+    return result.data
+  }
+)
+
+export const updateBingo = createAppAsyncThunk(
+  'bingos/updateBingo',
+  async (bingo: BingoUpdated, thunkApi) => {
+    const token = thunkApi.getState().auth.token
+    const response = await fetch(`${baseUrl}/bingos`, {
+      method: 'PATCH',
+      body: JSON.stringify(bingo),
       headers: {
         'Content-Type': 'application/json',
         authorization: `Bearer ${token}`,
@@ -187,6 +210,9 @@ const bingosSlice = createSlice({
       })
       .addCase(addNewBingo.rejected, (state, action) => {
         state.error = action.error.message ?? 'Unknow Error'
+      })
+      .addCase(updateBingo.fulfilled, (state, action) => {
+        bingosAdapter.upsertOne(state.bingos, action.payload)
       })
       .addCase(fetchBingoDetails.pending, (state, action) => {
         state.detailStatus = 'pending'
