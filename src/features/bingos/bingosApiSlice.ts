@@ -25,6 +25,8 @@ export interface BingoDetail {
   bingoId: number
   cellNumber: number
   participantName: string | null
+  takenAt?: string | null
+  updatedAt?: string
 }
 
 type BingoUpdated = Pick<

@@ -12,6 +12,7 @@ import { UsersList } from './features/users/UsersList'
 import AddUser from './features/users/AddUser'
 import AddBingo from './features/bingos/AddBingo'
 import BingoView from './features/bingos/BingoView'
+import DashboardPage from './features/dashboard/DashboardPage'
 import AccountPage from './features/account/AccountPage'
 import { Login } from './features/auth/Login'
 import { ResetPassword } from './features/auth/ResetPassword'
@@ -26,6 +27,7 @@ const App = () => {
         <Route path="/reset-password" element={<ResetPassword />} />
         <Route element={<RequiredAuth />}>
           <Route path="dash" element={<MainLayout />}>
+            <Route index element={<DashboardPage />} />
             <Route path="bingos">
               <Route index element={<BingosList />} />
               <Route path=":id" />

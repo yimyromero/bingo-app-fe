@@ -1,4 +1,5 @@
 import { useEffect, useState, type SubmitEvent } from 'react'
+import { formatDate } from 'date-fns'
 import {
   Button,
   Dialog,
@@ -91,6 +92,13 @@ const UpdateSquareModal = ({
           <DialogContentText sx={{ mb: 1 }}>
             Enter the participant's name. Leave it empty to free the square.
           </DialogContentText>
+          {detail?.takenAt && (
+            <DialogContentText variant="caption" component="div">
+              Taken on {formatDate(new Date(detail.takenAt), 'PPp')}
+              {detail.updatedAt &&
+                ` · Last updated ${formatDate(new Date(detail.updatedAt), 'PPp')}`}
+            </DialogContentText>
+          )}
           <TextField
             autoFocus
             margin="dense"

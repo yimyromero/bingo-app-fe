@@ -3,6 +3,7 @@ import { combineReducers, type UnknownAction } from 'redux'
 import bingosReducer from './features/bingos/bingosApiSlice'
 import usersReducer from './features/users/usersApiSlice'
 import accountReducer from './features/account/accountApiSlice'
+import dashboardReducer from './features/dashboard/dashboardApiSlice'
 import authReducer, { logout } from './features/auth/authApiSlice'
 
 const appReducer = combineReducers({
@@ -10,6 +11,7 @@ const appReducer = combineReducers({
   users: usersReducer,
   auth: authReducer,
   account: accountReducer,
+  dashboard: dashboardReducer,
 })
 
 const rootReducer = (
