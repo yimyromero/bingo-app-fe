@@ -13,10 +13,13 @@ import {
 import { GridOn } from '@mui/icons-material'
 import { useAppDispatch } from '../../hooks/hooks'
 import { resetPassword } from './authApiSlice'
+import { useTranslation } from '../../i18n/useTranslation'
+import LanguageSwitcher from '../../components/LanguageSwitcher'
 
 const MIN_PASSWORD_LENGTH = 8
 
 const ResetPassword = () => {
+  const { t, tServer } = useTranslation()
   const dispatch = useAppDispatch()
   const [searchParams] = useSearchParams()
   const token = searchParams.get('token') ?? ''
@@ -31,12 +34,10 @@ const ResetPassword = () => {
 
   const newError =
     submitted && newPassword.length < MIN_PASSWORD_LENGTH
-      ? `Use at least ${MIN_PASSWORD_LENGTH} characters.`
+      ? t('auth.reset.useAtLeast', { min: MIN_PASSWORD_LENGTH })
       : ''
   const confirmError =
-    submitted && confirmPassword !== newPassword
-      ? 'Passwords do not match.'
-      : ''
+    submitted && confirmPassword !== newPassword ? t('auth.reset.mismatch') : ''
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -56,7 +57,9 @@ const ResetPassword = () => {
       ).unwrap()
       setDone(true)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Something went wrong.')
+      setError(
+        err instanceof Error ? tServer(err.message) : t('common.somethingWrong')
+      )
     } finally {
       setSaving(false)
     }
@@ -75,6 +78,9 @@ const ResetPassword = () => {
         px: 2,
       }}
     >
+      <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+        <LanguageSwitcher />
+      </Box>
       <GridOn
         sx={{ fontSize: '45px', mb: 2, color: 'primary.main', rotate: '45deg' }}
       />
@@ -82,19 +88,17 @@ const ResetPassword = () => {
         variant="h3"
         sx={{ fontSize: 'large', fontWeight: 'bold', mb: 3 }}
       >
-        Choose a new password
+        {t('auth.reset.title')}
       </Typography>
 
       <Box sx={{ width: '100%', maxWidth: 400 }}>
         {!token ? (
-          <Alert severity="error">This reset link is invalid.</Alert>
+          <Alert severity="error">{t('auth.reset.invalidLink')}</Alert>
         ) : done ? (
           <Stack spacing={2}>
-            <Alert severity="success">
-              Your password was updated. You can now log in.
-            </Alert>
+            <Alert severity="success">{t('auth.reset.success')}</Alert>
             <Button variant="contained" component={Link} to="/login">
-              Go to login
+              {t('auth.reset.goToLogin')}
             </Button>
           </Stack>
         ) : (
@@ -102,19 +106,20 @@ const ResetPassword = () => {
             <Stack spacing={2}>
               {error && <Alert severity="error">{error}</Alert>}
               <TextField
-                label="New password"
+                label={t('auth.reset.newPassword')}
                 type={type}
                 autoComplete="new-password"
                 value={newPassword}
                 onChange={(e) => setNewPassword(e.target.value)}
                 error={!!newError}
                 helperText={
-                  newError || `At least ${MIN_PASSWORD_LENGTH} characters.`
+                  newError ||
+                  t('auth.reset.atLeast', { min: MIN_PASSWORD_LENGTH })
                 }
                 required
               />
               <TextField
-                label="Confirm new password"
+                label={t('auth.reset.confirmPassword')}
                 type={type}
                 autoComplete="new-password"
                 value={confirmPassword}
@@ -130,7 +135,7 @@ const ResetPassword = () => {
                     onChange={(e) => setShowPasswords(e.target.checked)}
                   />
                 }
-                label="Show passwords"
+                label={t('common.showPasswords')}
               />
               <Button
                 type="submit"
@@ -138,7 +143,7 @@ const ResetPassword = () => {
                 size="large"
                 disabled={saving}
               >
-                Reset password
+                {t('auth.reset.submit')}
               </Button>
             </Stack>
           </Box>

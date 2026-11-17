@@ -1,5 +1,5 @@
 import { useState, type SubmitEvent } from 'react'
-import { format, formatDate } from 'date-fns'
+import { format } from 'date-fns'
 import {
   Accordion,
   AccordionDetails,
@@ -22,6 +22,7 @@ import {
 import { useAppDispatch } from '../../hooks/hooks'
 import { updateBingo } from './bingosApiSlice'
 import type { Bingo } from './bingosApiSlice'
+import { useTranslation } from '../../i18n/useTranslation'
 
 interface BingoInfoFormProps {
   bingo: Bingo
@@ -30,6 +31,7 @@ interface BingoInfoFormProps {
 const toInputDate = (value: string) => format(new Date(value), 'yyyy-MM-dd')
 
 const BingoInfoForm = ({ bingo }: BingoInfoFormProps) => {
+  const { t, formatDate } = useTranslation()
   const dispatch = useAppDispatch()
 
   const [expanded, setExpanded] = useState(false)
@@ -69,7 +71,7 @@ const BingoInfoForm = ({ bingo }: BingoInfoFormProps) => {
       ).unwrap()
       setExpanded(false)
     } catch (err) {
-      setError('Could not save the changes. Please try again.')
+      setError(t('bingos.saveError'))
     } finally {
       setSaving(false)
     }
@@ -110,12 +112,14 @@ const BingoInfoForm = ({ bingo }: BingoInfoFormProps) => {
               variant="body2"
               sx={{ color: 'text.secondary' }}
             >
-              {formatDate(new Date(bingo.raffleDate), 'PPP')}
+              {formatDate(bingo.raffleDate)}
             </Typography>
           </Box>
           <Chip
             size="small"
-            label={bingo.isDone ? 'finished' : 'active'}
+            label={
+              bingo.isDone ? t('bingos.finishedChip') : t('bingos.activeChip')
+            }
             color={bingo.isDone ? 'error' : 'primary'}
             variant="outlined"
           />
@@ -130,7 +134,7 @@ const BingoInfoForm = ({ bingo }: BingoInfoFormProps) => {
           >
             <EditIcon sx={{ fontSize: 16 }} />
             <Typography variant="body2" sx={{ fontWeight: 500 }}>
-              {expanded ? 'Editing information' : 'Edit information'}
+              {expanded ? t('bingos.editingInfo') : t('bingos.editInfo')}
             </Typography>
           </Box>
         </Stack>
@@ -141,7 +145,7 @@ const BingoInfoForm = ({ bingo }: BingoInfoFormProps) => {
             {error && <Alert severity="error">{error}</Alert>}
             <TextField
               size="small"
-              label="Title"
+              label={t('bingos.titleField')}
               name="title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
@@ -150,7 +154,7 @@ const BingoInfoForm = ({ bingo }: BingoInfoFormProps) => {
             />
             <TextField
               size="small"
-              label="Raffle date"
+              label={t('bingos.raffleDate')}
               name="raffleDate"
               type="date"
               value={raffleDate}
@@ -160,10 +164,10 @@ const BingoInfoForm = ({ bingo }: BingoInfoFormProps) => {
             />
             <TextField
               size="small"
-              label="Squares"
+              label={t('bingos.squares')}
               value={bingo.gridSize}
               disabled
-              helperText="The number of squares can't be changed."
+              helperText={t('bingos.squaresHelp')}
             />
             <FormControlLabel
               control={
@@ -172,7 +176,7 @@ const BingoInfoForm = ({ bingo }: BingoInfoFormProps) => {
                   onChange={(e) => setIsDone(e.target.checked)}
                 />
               }
-              label="Finished"
+              label={t('bingos.finishedSwitch')}
             />
             <Stack
               direction="row"
@@ -184,10 +188,10 @@ const BingoInfoForm = ({ bingo }: BingoInfoFormProps) => {
                 onClick={handleCancel}
                 disabled={saving}
               >
-                Cancel
+                {t('common.cancel')}
               </Button>
               <Button variant="contained" type="submit" disabled={saving}>
-                Save changes
+                {t('bingos.saveChanges')}
               </Button>
             </Stack>
           </Stack>

@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from 'react'
-import { formatDate } from 'date-fns'
 import {
   Alert,
   Box,
@@ -29,6 +28,7 @@ import {
 } from './bingosApiSlice'
 import { renderBingoImage } from './shareImage'
 import type { ShareLayout } from './shareImage'
+import { useTranslation } from '../../i18n/useTranslation'
 
 interface ShareUpdateDialogProps {
   open: boolean
@@ -51,6 +51,7 @@ const ShareUpdateDialog = ({
   bingoId,
   onClose,
 }: ShareUpdateDialogProps) => {
+  const { t, formatDate } = useTranslation()
   const dispatch = useAppDispatch()
   const theme = useTheme()
   const fullScreen = useMediaQuery(theme.breakpoints.down('sm'))
@@ -92,9 +93,7 @@ const ShareUpdateDialog = ({
 
     renderBingoImage({
       title: bingo.title,
-      raffleDate: bingo.raffleDate
-        ? formatDate(new Date(bingo.raffleDate), 'PPP')
-        : null,
+      raffleDate: bingo.raffleDate ? formatDate(bingo.raffleDate) : null,
       cells: details,
       layout,
       colors: {
@@ -105,6 +104,28 @@ const ShareUpdateDialog = ({
         text: theme.palette.text.primary,
         muted: theme.palette.text.secondary,
         border: theme.palette.divider,
+      },
+      labels: {
+        message: (stats) =>
+          stats.total > 0 && stats.taken === stats.total
+            ? t('share.image.messageAll', { total: stats.total })
+            : stats.taken === 0
+              ? t('share.image.messageNone', { total: stats.total })
+              : t('share.image.messageSome', {
+                  taken: stats.taken,
+                  total: stats.total,
+                }),
+        raffle: (date) => t('share.image.raffle', { date }),
+        taken: t('share.image.taken'),
+        available: t('share.image.available'),
+        total: t('share.image.total'),
+        filled: t('share.image.filled'),
+        takenSpots: t('share.image.takenSpots'),
+        legendTaken: t('share.image.legendTaken'),
+        legendAvailable: t('share.image.legendAvailable'),
+        cellTaken: t('share.image.cellTaken'),
+        cellAvailable: t('share.image.cellAvailable'),
+        more: (count) => t('share.image.more', { count }),
       },
     })
       .then((result) => {
@@ -117,7 +138,7 @@ const ShareUpdateDialog = ({
           setImage(null)
           setNotice({
             severity: 'error',
-            message: 'Could not generate the image. Please try again.',
+            message: t('share.generateError'),
           })
         }
       })
@@ -126,7 +147,7 @@ const ShareUpdateDialog = ({
       cancelled = true
       if (url) URL.revokeObjectURL(url)
     }
-  }, [open, phase, bingo, details, layout, theme])
+  }, [open, phase, bingo, details, layout, theme, t, formatDate])
 
   // drop the old image when the dialog closes
   useEffect(() => {
@@ -162,9 +183,9 @@ const ShareUpdateDialog = ({
   const handleDownload = () => {
     try {
       download()
-      setNotice({ severity: 'success', message: 'Image downloaded.' })
+      setNotice({ severity: 'success', message: t('share.downloaded') })
     } catch {
-      setNotice({ severity: 'error', message: 'Could not download the image.' })
+      setNotice({ severity: 'error', message: t('share.downloadError') })
     }
   }
 
@@ -176,8 +197,7 @@ const ShareUpdateDialog = ({
       handleDownload()
       setNotice({
         severity: 'info',
-        message:
-          "Sharing images isn't supported in this browser, so the image was downloaded. Attach it to your post manually.",
+        message: t('share.shareFallback'),
       })
       return
     }
@@ -194,7 +214,7 @@ const ShareUpdateDialog = ({
       if (!(err instanceof DOMException && err.name === 'AbortError')) {
         setNotice({
           severity: 'error',
-          message: 'Sharing failed. You can download the image instead.',
+          message: t('share.shareError'),
         })
       }
     } finally {
@@ -211,12 +231,12 @@ const ShareUpdateDialog = ({
       ])
       setNotice({
         severity: 'success',
-        message: 'Image copied to the clipboard.',
+        message: t('share.copied'),
       })
     } catch {
       setNotice({
         severity: 'error',
-        message: 'Could not copy the image. Try downloading it instead.',
+        message: t('share.copyError'),
       })
     } finally {
       setBusy(false)
@@ -231,7 +251,7 @@ const ShareUpdateDialog = ({
       fullWidth
       maxWidth="sm"
     >
-      <DialogTitle>Share update</DialogTitle>
+      <DialogTitle>{t('share.title')}</DialogTitle>
       <DialogContent>
         <Stack spacing={2}>
           <ToggleButtonGroup
@@ -243,27 +263,23 @@ const ShareUpdateDialog = ({
             onChange={(_, value: ShareLayout | null) =>
               value && setLayout(value)
             }
-            aria-label="Image layout"
+            aria-label={t('share.layoutLabel')}
           >
-            <ToggleButton value="names">Names in grid</ToggleButton>
-            <ToggleButton value="list">Grid + list</ToggleButton>
-            <ToggleButton value="private">Numbers only</ToggleButton>
+            <ToggleButton value="names">{t('share.layoutNames')}</ToggleButton>
+            <ToggleButton value="list">{t('share.layoutList')}</ToggleButton>
+            <ToggleButton value="private">
+              {t('share.layoutPrivate')}
+            </ToggleButton>
           </ToggleButtonGroup>
 
           {phase === 'error' && (
-            <Alert severity="error">
-              Could not load the latest data, so no image was generated. Close
-              this window and try again.
-            </Alert>
+            <Alert severity="error">{t('share.loadError')}</Alert>
           )}
 
           {notice && <Alert severity={notice.severity}>{notice.message}</Alert>}
 
           {layout === 'names' && image && !image.namesFit && (
-            <Alert severity="info">
-              There are too many squares to print names inside them, so they
-              show as taken. Try the "Grid + list" layout to include names.
-            </Alert>
+            <Alert severity="info">{t('share.namesTooMany')}</Alert>
           )}
 
           <Box
@@ -284,7 +300,7 @@ const ShareUpdateDialog = ({
               <Box
                 component="img"
                 src={image.url}
-                alt={`Preview: ${image.message}`}
+                alt={t('share.previewAlt', { message: image.message })}
                 sx={{ width: '100%', height: '100%', display: 'block' }}
               />
             ) : (
@@ -306,8 +322,7 @@ const ShareUpdateDialog = ({
 
           {phase === 'ready' && image && !canShareFiles && (
             <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-              This browser can't share images directly. Download the image and
-              attach it to your post.
+              {t('share.noShareSupport')}
             </Typography>
           )}
         </Stack>
@@ -321,15 +336,15 @@ const ShareUpdateDialog = ({
           justifyContent: 'flex-end',
         }}
       >
-        <Button onClick={onClose}>Close</Button>
+        <Button onClick={onClose}>{t('common.close')}</Button>
         <Button
           variant="outlined"
           startIcon={<CopyIcon />}
           onClick={handleCopy}
           disabled={!image || busy || !canCopy}
-          title={canCopy ? undefined : "Copying images isn't supported here"}
+          title={canCopy ? undefined : t('share.copyUnsupported')}
         >
-          Copy image
+          {t('share.copy')}
         </Button>
         <Button
           variant="outlined"
@@ -337,7 +352,7 @@ const ShareUpdateDialog = ({
           onClick={handleDownload}
           disabled={!image || busy}
         >
-          Download image
+          {t('share.download')}
         </Button>
         <Button
           variant="contained"
@@ -345,7 +360,7 @@ const ShareUpdateDialog = ({
           onClick={handleShare}
           disabled={!image || busy}
         >
-          Share
+          {t('share.share')}
         </Button>
       </DialogActions>
     </Dialog>

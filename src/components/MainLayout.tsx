@@ -24,29 +24,43 @@ import { NavLink, Outlet, replace, useNavigate } from 'react-router'
 import { useAppDispatch } from '../hooks/hooks'
 import { jwtDecode, type JwtPayload } from 'jwt-decode'
 import { useAppSelector } from '../hooks/hooks'
+import { useTranslation } from '../i18n/useTranslation'
+import type { TranslationKey } from '../i18n/locales/en'
+import LanguageSwitcher from './LanguageSwitcher'
 import { logout, selectCurrentToken } from '../features/auth/authApiSlice'
 
 const drawerWidth = 240
-const primaryMenuOptions = [
+
+interface MenuOption {
+  labelKey: TranslationKey
+  path?: string
+  action?: string
+  icon: React.ReactNode
+}
+const primaryMenuOptions: MenuOption[] = [
   {
-    text: 'Dashboard',
+    labelKey: 'nav.dashboard',
     path: '/dash',
     icon: <DashboardIcon />,
   },
   {
-    text: 'Users',
+    labelKey: 'nav.users',
     path: '/dash/users',
     icon: <UsersIcon />,
   },
   {
-    text: 'Bingos',
+    labelKey: 'nav.bingos',
     path: '/dash/bingos',
     icon: <ListIcon />,
   },
 ]
-const secondaryMenuOptions = [
-  { text: 'Account', path: '/dash/account', icon: <AccountSettingsIcons /> },
-  { text: 'Logout', action: 'logout', icon: <LogoutIcon /> },
+const secondaryMenuOptions: MenuOption[] = [
+  {
+    labelKey: 'nav.account',
+    path: '/dash/account',
+    icon: <AccountSettingsIcons />,
+  },
+  { labelKey: 'nav.logout', action: 'logout', icon: <LogoutIcon /> },
 ]
 
 const isAdmin = (token: string | null) => {
@@ -62,6 +76,7 @@ const isAdmin = (token: string | null) => {
 }
 
 const MainLayout = () => {
+  const { t } = useTranslation()
   const token = useAppSelector(selectCurrentToken)
   // user management is admin only (the API enforces it too)
   const visiblePrimaryOptions = primaryMenuOptions.filter(
@@ -114,10 +129,10 @@ const MainLayout = () => {
       <Divider />
       <List>
         {visiblePrimaryOptions.map((option) => (
-          <ListItem key={option.text} disablePadding>
+          <ListItem key={option.labelKey} disablePadding>
             <ListItemButton
               component={NavLink}
-              to={option.path}
+              to={option.path ?? '/dash'}
               end
               sx={{
                 '&.active': {
@@ -129,7 +144,7 @@ const MainLayout = () => {
               }}
             >
               <ListItemIcon>{option.icon}</ListItemIcon>
-              <ListItemText primary={option.text} />
+              <ListItemText primary={t(option.labelKey)} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -137,7 +152,7 @@ const MainLayout = () => {
       <Divider />
       <List>
         {secondaryMenuOptions.map((option) => (
-          <ListItem key={option.text} disablePadding>
+          <ListItem key={option.labelKey} disablePadding>
             <ListItemButton
               component={option.path ? NavLink : 'button'}
               to={option.path}
@@ -152,7 +167,7 @@ const MainLayout = () => {
               }}
             >
               <ListItemIcon>{option.icon}</ListItemIcon>
-              <ListItemText primary={option.text} />
+              <ListItemText primary={t(option.labelKey)} />
             </ListItemButton>
           </ListItem>
         ))}
@@ -173,7 +188,7 @@ const MainLayout = () => {
         <Toolbar>
           <IconButton
             color="inherit"
-            aria-label="open drawer"
+            aria-label={t('nav.openDrawer')}
             edge="start"
             onClick={handleDrawerToggle}
             sx={{
@@ -199,10 +214,18 @@ const MainLayout = () => {
                 flexGrow: 1,
               }}
             >
-              Bingos
+              {t('common.appName')}
             </Typography>
-            <Box sx={{ flexGrow: 0 }}>
-              <Tooltip title="Open settings">
+            <Box
+              sx={{
+                flexGrow: 0,
+                display: 'flex',
+                alignItems: 'center',
+                gap: 1,
+              }}
+            >
+              <LanguageSwitcher />
+              <Tooltip title={t('nav.openSettings')}>
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
                   <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
                 </IconButton>
@@ -224,7 +247,7 @@ const MainLayout = () => {
                 onClose={handleCloseUserMenu}
               >
                 {secondaryMenuOptions.map((option) => (
-                  <ListItem key={option.text} disablePadding>
+                  <ListItem key={option.labelKey} disablePadding>
                     <ListItemButton
                       component={option.path ? NavLink : 'button'}
                       to={option.path}
@@ -233,7 +256,7 @@ const MainLayout = () => {
                       }
                     >
                       <ListItemIcon>{option.icon}</ListItemIcon>
-                      <ListItemText primary={option.text} />
+                      <ListItemText primary={t(option.labelKey)} />
                     </ListItemButton>
                   </ListItem>
                 ))}
@@ -245,7 +268,7 @@ const MainLayout = () => {
       <Box
         component="nav"
         sx={{ width: { md: drawerWidth }, flexShrink: { md: 0 } }}
-        aria-label="menu-options"
+        aria-label={t('nav.menuOptions')}
       >
         <Drawer
           variant="temporary"

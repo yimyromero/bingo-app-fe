@@ -4,6 +4,7 @@ import { jwtDecode, type JwtPayload } from 'jwt-decode'
 import { useAppDispatch, useAppSelector } from '../../hooks/hooks'
 import { selectCurrentToken } from '../auth/authApiSlice'
 import { addNewBingo } from './bingosApiSlice'
+import { useTranslation } from '../../i18n/useTranslation'
 
 interface AddNewFormFields extends HTMLFormControlsCollection {
   userId: HTMLInputElement
@@ -23,6 +24,7 @@ interface UserInfoPayLoad extends JwtPayload {
 }
 
 const AddBingo = () => {
+  const { t } = useTranslation()
   const [addRequestedStatus, setAddRequestedStatus] = useState<
     'idle' | 'pending'
   >('idle')
@@ -74,7 +76,7 @@ const AddBingo = () => {
         }}
       >
         <Typography variant="h5" mb={3}>
-          New Bingo
+          {t('bingos.newTitle')}
         </Typography>
 
         <Box
@@ -85,7 +87,7 @@ const AddBingo = () => {
           <Stack spacing={2} direction="row">
             <TextField
               size="small"
-              label="Title"
+              label={t('bingos.titleField')}
               name="title"
               type="text"
               fullWidth
@@ -94,7 +96,7 @@ const AddBingo = () => {
 
             <TextField
               size="small"
-              label="Quantity"
+              label={t('bingos.quantity')}
               name="quantity"
               type="text"
               required
@@ -103,7 +105,7 @@ const AddBingo = () => {
           <Stack spacing={2}>
             <TextField
               size="small"
-              label="Price"
+              label={t('bingos.price')}
               name="price"
               type="currency"
               fullWidth
@@ -112,10 +114,15 @@ const AddBingo = () => {
           </Stack>
           <Box>
             <Typography sx={{ fontSize: 'large', fontWeight: 'medium' }}>
-              Prizes
+              {t('bingos.prizes')}
             </Typography>
             <Stack>
-              <TextField size="small" label="Prize" name="prize" type="text" />
+              <TextField
+                size="small"
+                label={t('bingos.prize')}
+                name="prize"
+                type="text"
+              />
             </Stack>
           </Box>
 
@@ -125,7 +132,7 @@ const AddBingo = () => {
             color="primary"
             size="large"
           >
-            Save
+            {t('common.save')}
           </Button>
         </Box>
       </Paper>

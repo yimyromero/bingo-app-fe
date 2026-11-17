@@ -1,5 +1,4 @@
 import { useEffect, useState, type SubmitEvent } from 'react'
-import { formatDate } from 'date-fns'
 import {
   Button,
   Dialog,
@@ -14,6 +13,7 @@ import { useTheme } from '@mui/material/styles'
 import { useAppDispatch } from '../../hooks/hooks'
 import { updateBingoCell } from './bingosApiSlice'
 import type { BingoDetail } from './bingosApiSlice'
+import { useTranslation } from '../../i18n/useTranslation'
 
 interface UpdateSquareModalProps {
   open: boolean
@@ -26,6 +26,7 @@ const UpdateSquareModal = ({
   detail,
   onClose,
 }: UpdateSquareModalProps) => {
+  const { t, formatDate } = useTranslation()
   const dispatch = useAppDispatch()
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
@@ -57,7 +58,7 @@ const UpdateSquareModal = ({
       ).unwrap()
       onClose()
     } catch (err) {
-      setError('Could not save the square. Please try again.')
+      setError(t('grid.saveError'))
     } finally {
       setSaving(false)
     }
@@ -87,23 +88,25 @@ const UpdateSquareModal = ({
       }
     >
       <form onSubmit={handleSubmit}>
-        <DialogTitle>Square {detail?.cellNumber}</DialogTitle>
+        <DialogTitle>
+          {t('grid.square', { number: detail?.cellNumber ?? '' })}
+        </DialogTitle>
         <DialogContent>
           <DialogContentText sx={{ mb: 1 }}>
-            Enter the participant's name. Leave it empty to free the square.
+            {t('grid.squareHelp')}
           </DialogContentText>
           {detail?.takenAt && (
             <DialogContentText variant="caption" component="div">
-              Taken on {formatDate(new Date(detail.takenAt), 'PPp')}
+              {t('grid.takenOn', { date: formatDate(detail.takenAt, 'PPp') })}
               {detail.updatedAt &&
-                ` · Last updated ${formatDate(new Date(detail.updatedAt), 'PPp')}`}
+                ` · ${t('grid.lastUpdated', { date: formatDate(detail.updatedAt, 'PPp') })}`}
             </DialogContentText>
           )}
           <TextField
             autoFocus
             margin="dense"
             name="name"
-            label="Participant name"
+            label={t('grid.participantName')}
             type="text"
             fullWidth
             value={participantName}
@@ -114,10 +117,10 @@ const UpdateSquareModal = ({
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
           <Button variant="outlined" onClick={onClose} disabled={saving}>
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button variant="contained" type="submit" disabled={saving}>
-            Save
+            {t('common.save')}
           </Button>
         </DialogActions>
       </form>

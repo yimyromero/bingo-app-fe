@@ -2,12 +2,14 @@ import { useState } from 'react'
 import { Box, ButtonBase, Tooltip, Typography } from '@mui/material'
 import type { BingoDetail } from './bingosApiSlice'
 import UpdateSquareModal from './updateSquareModal'
+import { useTranslation } from '../../i18n/useTranslation'
 
 interface BingoGridProps {
   details: BingoDetail[]
 }
 
 const BingoGrid = ({ details }: BingoGridProps) => {
+  const { t } = useTranslation()
   const [selectedId, setSelectedId] = useState<number | null>(null)
 
   // read from the store-fed props so the dialog always sees fresh data
@@ -32,9 +34,14 @@ const BingoGrid = ({ details }: BingoGridProps) => {
             >
               <ButtonBase
                 onClick={() => setSelectedId(detail.id)}
-                aria-label={`Square ${detail.cellNumber}${
-                  assigned ? `, ${detail.participantName}` : ', available'
-                }`}
+                aria-label={
+                  assigned
+                    ? t('grid.squareTaken', {
+                        number: detail.cellNumber,
+                        name: detail.participantName ?? '',
+                      })
+                    : t('grid.squareAvailable', { number: detail.cellNumber })
+                }
                 sx={(theme) => ({
                   aspectRatio: '1 / 1',
                   display: 'flex',

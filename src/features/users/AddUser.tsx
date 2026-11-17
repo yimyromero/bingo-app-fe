@@ -2,6 +2,7 @@ import { Box, Paper, Typography, TextField, Button, Stack } from '@mui/material'
 import { useState } from 'react'
 import { useAppDispatch, useAppSelector } from '../../hooks/hooks'
 import { addNewUser } from './usersApiSlice'
+import { useTranslation } from '../../i18n/useTranslation'
 
 interface AddNewFormFields extends HTMLFormControlsCollection {
   email: HTMLInputElement
@@ -14,6 +15,7 @@ interface AddPostFormElements extends HTMLFormElement {
 }
 
 const AddUser = () => {
+  const { t } = useTranslation()
   const [addRequestedStatus, setAddRequestedStatus] = useState<
     'idle' | 'pending'
   >('idle')
@@ -60,13 +62,13 @@ const AddUser = () => {
         }}
       >
         <Typography variant="h5" mb={3}>
-          New User
+          {t('users.newUserTitle')}
         </Typography>
 
         <Box component="form" onSubmit={handleSubmit}>
           <Stack spacing={3}>
             <TextField
-              label="Email Address"
+              label={t('users.email')}
               name="email"
               type="email"
               fullWidth
@@ -74,7 +76,7 @@ const AddUser = () => {
             />
 
             <TextField
-              label="Password"
+              label={t('users.password')}
               name="password"
               type="password"
               autoComplete="current-password"
@@ -82,7 +84,7 @@ const AddUser = () => {
               required
             />
 
-            <TextField label="Name" name="name" fullWidth required />
+            <TextField label={t('users.name')} name="name" fullWidth required />
 
             <Button
               type="submit"
@@ -90,7 +92,7 @@ const AddUser = () => {
               color="primary"
               size="large"
             >
-              Save
+              {t('common.save')}
             </Button>
           </Stack>
         </Box>

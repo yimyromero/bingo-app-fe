@@ -25,6 +25,7 @@ export interface ShareImageInput {
   cells: ShareCell[]
   layout: ShareLayout
   colors: ShareColors
+  labels: ShareLabels
 }
 
 export interface ShareImageResult {
@@ -52,10 +53,20 @@ export const getShareStats = (cells: ShareCell[]): ShareStats => {
   }
 }
 
-export const getShareMessage = ({ taken, total }: ShareStats) => {
-  if (total > 0 && taken === total) return `All ${total} spots are taken!`
-  if (taken === 0) return `${total} spots available!`
-  return `${taken} of ${total} spots taken!`
+// every piece of text drawn on the image, so it can be translated by the caller
+export interface ShareLabels {
+  message: (stats: ShareStats) => string
+  raffle: (date: string) => string
+  taken: string
+  available: string
+  total: string
+  filled: string
+  takenSpots: string
+  legendTaken: string
+  legendAvailable: string
+  cellTaken: string
+  cellAvailable: string
+  more: (count: number) => string
 }
 
 const SIZE = 1080
@@ -171,7 +182,8 @@ const drawGrid = (
   cells: ShareCell[],
   area: { x: number; y: number; w: number; h: number },
   layout: ShareLayout,
-  colors: ShareColors
+  colors: ShareColors,
+  labels: ShareLabels
 ) => {
   const gap = cells.length > 64 ? 6 : 10
   const { cols, rows, cell } = bestGrid(cells.length, area.w, area.h, gap)
@@ -239,7 +251,11 @@ const drawGrid = (
         setFont(ctx, labelSize, 500)
         ctx.fillStyle = name ? colors.primaryText : colors.muted
         ctx.globalAlpha = name ? 0.85 : 1
-        ctx.fillText(name ? 'Taken' : 'Available', cx, baseline + labelSize + 8)
+        ctx.fillText(
+          name ? labels.cellTaken : labels.cellAvailable,
+          cx,
+          baseline + labelSize + 8
+        )
         ctx.globalAlpha = 1
       }
     }
@@ -275,7 +291,8 @@ const drawTakenList = (
   ctx: Ctx,
   cells: ShareCell[],
   area: { x: number; y: number; w: number; h: number },
-  colors: ShareColors
+  colors: ShareColors,
+  labels: ShareLabels
 ) => {
   const people = groupByParticipant(cells)
 
@@ -283,7 +300,7 @@ const drawTakenList = (
   ctx.fillStyle = colors.muted
   ctx.textAlign = 'left'
   ctx.textBaseline = 'alphabetic'
-  ctx.fillText('TAKEN SPOTS', area.x, area.y + 18)
+  ctx.fillText(labels.takenSpots, area.x, area.y + 18)
 
   if (!people.length) return
 
@@ -355,7 +372,7 @@ const drawTakenList = (
   let visible = placed.filter((p) => p.row < maxRows)
   let hiddenPeople = placed.length - visible.length
 
-  const moreLabel = () => `+${hiddenPeople} more`
+  const moreLabel = () => labels.more(hiddenPeople)
   const moreWidth = () => {
     setFont(ctx, 20, 500)
     return ctx.measureText(moreLabel()).width + 28
@@ -417,7 +434,7 @@ const drawTakenList = (
 export const renderBingoImage = async (
   input: ShareImageInput
 ): Promise<ShareImageResult> => {
-  const { title, raffleDate, cells, layout, colors } = input
+  const { title, raffleDate, cells, layout, colors, labels } = input
 
   // make sure the webfont is ready before drawing text with it
   try {
@@ -437,7 +454,7 @@ export const renderBingoImage = async (
   if (!ctx) throw new Error('Canvas is not supported in this browser.')
 
   const stats = getShareStats(cells)
-  const message = getShareMessage(stats)
+  const message = labels.message(stats)
   const contentW = SIZE - PAD * 2
 
   // background and accent strip
@@ -465,7 +482,7 @@ export const renderBingoImage = async (
   if (raffleDate) {
     setFont(ctx, 26, 500)
     ctx.textAlign = 'right'
-    ctx.fillText(`Raffle: ${raffleDate}`, SIZE - PAD, 76)
+    ctx.fillText(labels.raffle(raffleDate), SIZE - PAD, 76)
   }
 
   // title
@@ -482,10 +499,10 @@ export const renderBingoImage = async (
 
   // stats strip
   const statItems = [
-    { label: 'TAKEN', value: String(stats.taken) },
-    { label: 'AVAILABLE', value: String(stats.available) },
-    { label: 'TOTAL', value: String(stats.total) },
-    { label: 'FILLED', value: `${stats.percent}%` },
+    { label: labels.taken, value: String(stats.taken) },
+    { label: labels.available, value: String(stats.available) },
+    { label: labels.total, value: String(stats.total) },
+    { label: labels.filled, value: `${stats.percent}%` },
   ]
   const statGap = 14
   const statW = (contentW - statGap * 3) / 4
@@ -532,7 +549,7 @@ export const renderBingoImage = async (
 
   if (layout === 'list') {
     const gridArea = { x: PAD, y: gridTop, w: contentW, h: 300 }
-    namesFit = drawGrid(ctx, cells, gridArea, layout, colors)
+    namesFit = drawGrid(ctx, cells, gridArea, layout, colors, labels)
     drawTakenList(
       ctx,
       cells,
@@ -542,7 +559,8 @@ export const renderBingoImage = async (
         w: contentW,
         h: bottom - (gridTop + 320),
       },
-      colors
+      colors,
+      labels
     )
   } else {
     namesFit = drawGrid(
@@ -550,14 +568,15 @@ export const renderBingoImage = async (
       cells,
       { x: PAD, y: gridTop, w: contentW, h: bottom - gridTop },
       layout,
-      colors
+      colors,
+      labels
     )
   }
 
   // legend
   const legend = [
-    { label: 'Taken', filled: true },
-    { label: 'Available', filled: false },
+    { label: labels.legendTaken, filled: true },
+    { label: labels.legendAvailable, filled: false },
   ]
   setFont(ctx, 22, 500)
   const widths = legend.map((l) => 28 + 12 + ctx.measureText(l.label).width)

@@ -1,27 +1,27 @@
-import { Component, useState } from 'react'
-import { format, formatDate } from 'date-fns'
+import { useState } from 'react'
 import { Link } from 'react-router'
 import {
   Event as EventIcon,
   GridOn,
-  GridView,
   MoreHoriz,
-  ShapeLine,
   Edit as EditIcon,
+  Share as ShareIcon,
+  DeleteOutline as DeleteIcon,
 } from '@mui/icons-material'
 import {
   Box,
+  Button,
   Chip,
   IconButton,
-  ListItem,
+  ListItemIcon,
   ListItemText,
-  Button,
-  Stack,
-  Typography,
   Menu,
   MenuItem,
-  ListItemButton,
+  Paper,
+  Stack,
+  Typography,
 } from '@mui/material'
+import { useTranslation } from '../../i18n/useTranslation'
 
 export interface BingoCardType {
   id: number
@@ -29,114 +29,142 @@ export interface BingoCardType {
   gridSize: number
   raffleDate: string
   isDone?: boolean
+  canShare?: boolean
+  onShare?: (id: number) => void
+  onDelete?: (id: number) => void
 }
 
-const BingoCard = ({ ...card }: BingoCardType) => {
-  const settings = ['Edit']
-  const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null)
-  const handleCloseUserMenu = () => {
-    setAnchorElUser(null)
-  }
-  const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorElUser(event.currentTarget)
-  }
+const BingoCard = ({
+  id,
+  title,
+  gridSize,
+  raffleDate,
+  isDone,
+  canShare,
+  onShare,
+  onDelete,
+}: BingoCardType) => {
+  const { t, formatDate } = useTranslation()
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+  const closeMenu = () => setAnchorEl(null)
 
-  const raffleDate = formatDate(new Date(card.raffleDate), 'PPP')
+  const viewPath = `/dash/bingos/${id}/view`
 
   return (
-    <ListItem
+    <Paper
+      variant="outlined"
       sx={{
-        background: 'Background',
-        borderRadius: 1,
+        p: 2,
         mb: 2,
+        transition: 'box-shadow 0.2s, border-color 0.2s',
+        '&:hover': { boxShadow: 2, borderColor: 'primary.main' },
       }}
-      secondaryAction={
-        <Stack
-          direction="row"
-          spacing={2}
-          sx={{ display: 'flex', alignItems: 'center' }}
-        >
-          <Chip
-            size="small"
-            label={`${!card.isDone ? 'active' : 'finished'}`}
-            color={`${!card.isDone ? 'primary' : 'error'}`}
-            variant="outlined"
-          />
-          <Box>
-            <IconButton
-              onClick={handleOpenUserMenu}
-              arial-label="More options"
-              size="small"
-            >
-              <MoreHoriz />
-            </IconButton>
-            <Menu
-              sx={{ mt: '30px' }}
-              id="menu-row"
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-            >
-              {settings.map((setting) => (
-                <ListItem
-                  key={setting}
-                  onClick={handleCloseUserMenu}
-                  disablePadding
-                  dense
-                >
-                  <ListItemButton
-                    component={Link}
-                    to={`/dash/bingos/${card.id}/view`}
-                    sx={{ textAlign: 'center', gap: 0.5 }}
-                  >
-                    <EditIcon sx={{ fontSize: 16 }} />
-                    {setting}
-                  </ListItemButton>
-                </ListItem>
-              ))}
-            </Menu>
-          </Box>
-        </Stack>
-      }
     >
-      <ListItemText
-        disableTypography={true}
-        primary={<Typography sx={{ fontWeight: 600 }}>{card.title}</Typography>}
-        secondary={
-          <>
+      <Stack
+        direction="row"
+        spacing={2}
+        sx={{ alignItems: 'center', justifyContent: 'space-between' }}
+      >
+        <Box sx={{ minWidth: 0 }}>
+          <Typography
+            component={Link}
+            to={viewPath}
+            noWrap
+            sx={{
+              fontWeight: 600,
+              color: 'inherit',
+              textDecoration: 'none',
+              display: 'block',
+              '&:hover': { textDecoration: 'underline' },
+            }}
+          >
+            {title}
+          </Typography>
+          <Stack
+            direction="row"
+            spacing={2}
+            sx={{ mt: 0.5, flexWrap: 'wrap', color: 'text.secondary' }}
+          >
             <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
               <EventIcon sx={{ fontSize: 16 }} />
-              <Typography
-                component="time"
-                variant="body2"
-                sx={{ color: 'text.secondary' }}
-              >
-                {raffleDate}
+              <Typography component="time" variant="body2">
+                {raffleDate ? formatDate(raffleDate) : '—'}
               </Typography>
             </Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+            <Box sx={{ display: 'flex', gap: 0.5, alignItems: 'center' }}>
               <GridOn sx={{ fontSize: 14 }} />
-              <Typography
-                component="span"
-                variant="body2"
-                sx={{ display: 'block' }}
-              >
-                {card.gridSize}
-              </Typography>
+              <Typography variant="body2">{gridSize}</Typography>
             </Box>
-          </>
-        }
-      ></ListItemText>
-    </ListItem>
+          </Stack>
+        </Box>
+
+        <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
+          <Chip
+            size="small"
+            label={isDone ? t('bingos.finishedChip') : t('bingos.activeChip')}
+            color={isDone ? 'error' : 'primary'}
+            variant="outlined"
+          />
+          <Button
+            size="small"
+            variant="outlined"
+            component={Link}
+            to={viewPath}
+            sx={{ display: { xs: 'none', sm: 'inline-flex' } }}
+          >
+            {t('bingos.open')}
+          </Button>
+          <IconButton
+            size="small"
+            aria-label={t('bingos.moreOptions')}
+            onClick={(e) => setAnchorEl(e.currentTarget)}
+          >
+            <MoreHoriz />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={closeMenu}
+            anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+            transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          >
+            <MenuItem component={Link} to={viewPath} onClick={closeMenu}>
+              <ListItemIcon>
+                <EditIcon fontSize="small" />
+              </ListItemIcon>
+              <ListItemText>{t('bingos.edit')}</ListItemText>
+            </MenuItem>
+            {canShare && onShare && (
+              <MenuItem
+                onClick={() => {
+                  closeMenu()
+                  onShare(id)
+                }}
+              >
+                <ListItemIcon>
+                  <ShareIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>{t('bingos.shareUpdate')}</ListItemText>
+              </MenuItem>
+            )}
+            {onDelete && (
+              <MenuItem
+                sx={{ color: 'error.main' }}
+                onClick={() => {
+                  closeMenu()
+                  onDelete(id)
+                }}
+              >
+                <ListItemIcon sx={{ color: 'inherit' }}>
+                  <DeleteIcon fontSize="small" />
+                </ListItemIcon>
+                <ListItemText>{t('bingos.deleteBingo')}</ListItemText>
+              </MenuItem>
+            )}
+          </Menu>
+        </Stack>
+      </Stack>
+    </Paper>
   )
 }
 

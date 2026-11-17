@@ -21,31 +21,34 @@ import {
   updateAccount,
 } from './accountApiSlice'
 import type { Account } from './accountApiSlice'
+import { useTranslation } from '../../i18n/useTranslation'
+import type { I18nValue } from '../../i18n/i18nContext'
 
 // letters (any language), spaces, apostrophes, periods and hyphens
 const NAME_PATTERN = /^[\p{L}\p{M}][\p{L}\p{M} '.-]*$/u
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
 const MIN_PASSWORD_LENGTH = 8
 
+type Translate = I18nValue['t']
 type Feedback = { severity: 'success' | 'error'; message: string } | null
 
-const validateName = (name: string) => {
+const validateName = (name: string, t: Translate) => {
   const value = name.trim()
-  if (!value) return 'Name is required.'
-  if (value.length > 50) return 'Name must be 50 characters or fewer.'
-  if (!NAME_PATTERN.test(value))
-    return 'Use letters, spaces, apostrophes, periods or hyphens only.'
+  if (!value) return t('account.nameRequired')
+  if (value.length > 50) return t('account.nameTooLong')
+  if (!NAME_PATTERN.test(value)) return t('account.nameInvalid')
   return ''
 }
 
-const validateEmail = (email: string) => {
+const validateEmail = (email: string, t: Translate) => {
   const value = email.trim()
-  if (!value) return 'Email is required.'
-  if (!EMAIL_PATTERN.test(value)) return 'Enter a valid email address.'
+  if (!value) return t('account.emailRequired')
+  if (!EMAIL_PATTERN.test(value)) return t('account.emailInvalid')
   return ''
 }
 
 const PersonalInformation = ({ account }: { account: Account }) => {
+  const { t, tServer } = useTranslation()
   const dispatch = useAppDispatch()
 
   const [name, setName] = useState(account.name ?? '')
@@ -54,8 +57,8 @@ const PersonalInformation = ({ account }: { account: Account }) => {
   const [saving, setSaving] = useState(false)
   const [feedback, setFeedback] = useState<Feedback>(null)
 
-  const nameError = submitted ? validateName(name) : ''
-  const emailError = submitted ? validateEmail(email) : ''
+  const nameError = submitted ? validateName(name, t) : ''
+  const emailError = submitted ? validateEmail(email, t) : ''
   const dirty =
     name.trim() !== (account.name ?? '') || email.trim() !== account.email
 
@@ -64,7 +67,7 @@ const PersonalInformation = ({ account }: { account: Account }) => {
     setSubmitted(true)
     setFeedback(null)
 
-    if (validateName(name) || validateEmail(email)) return
+    if (validateName(name, t) || validateEmail(email, t)) return
 
     try {
       setSaving(true)
@@ -74,11 +77,14 @@ const PersonalInformation = ({ account }: { account: Account }) => {
       setName(updated.name ?? '')
       setEmail(updated.email)
       setSubmitted(false)
-      setFeedback({ severity: 'success', message: 'Your profile was updated.' })
+      setFeedback({ severity: 'success', message: t('account.profileUpdated') })
     } catch (err) {
       setFeedback({
         severity: 'error',
-        message: err instanceof Error ? err.message : 'Something went wrong.',
+        message:
+          err instanceof Error
+            ? tServer(err.message)
+            : t('common.somethingWrong'),
       })
     } finally {
       setSaving(false)
@@ -88,7 +94,7 @@ const PersonalInformation = ({ account }: { account: Account }) => {
   return (
     <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
       <Typography variant="h6" sx={{ mb: 2 }}>
-        Personal Information
+        {t('account.personal')}
       </Typography>
       <Box component="form" onSubmit={handleSubmit} noValidate>
         <Stack spacing={2}>
@@ -96,7 +102,7 @@ const PersonalInformation = ({ account }: { account: Account }) => {
             <Alert severity={feedback.severity}>{feedback.message}</Alert>
           )}
           <TextField
-            label="Name"
+            label={t('account.name')}
             name="name"
             autoComplete="name"
             value={name}
@@ -107,24 +113,24 @@ const PersonalInformation = ({ account }: { account: Account }) => {
             required
           />
           <TextField
-            label="Email address"
+            label={t('account.email')}
             name="email"
             type="email"
             autoComplete="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             error={!!emailError}
-            helperText={emailError || 'This is the email you use to log in.'}
+            helperText={emailError || t('account.emailHelp')}
             fullWidth
             required
           />
           <Stack direction="row" spacing={1} sx={{ alignItems: 'center' }}>
             <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-              Account status
+              {t('account.status')}
             </Typography>
             <Chip
               size="small"
-              label={account.active ? 'Active' : 'Disabled'}
+              label={account.active ? t('common.active') : t('common.disabled')}
               color={account.active ? 'success' : 'default'}
               variant="outlined"
             />
@@ -136,7 +142,7 @@ const PersonalInformation = ({ account }: { account: Account }) => {
               disabled={saving || !dirty}
               sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
-              Save Changes
+              {t('account.saveChanges')}
             </Button>
           </Box>
         </Stack>
@@ -146,6 +152,7 @@ const PersonalInformation = ({ account }: { account: Account }) => {
 }
 
 const PasswordAndSecurity = () => {
+  const { t, tServer } = useTranslation()
   const dispatch = useAppDispatch()
 
   const [currentPassword, setCurrentPassword] = useState('')
@@ -157,18 +164,16 @@ const PasswordAndSecurity = () => {
   const [feedback, setFeedback] = useState<Feedback>(null)
 
   const currentError =
-    submitted && !currentPassword ? 'Enter your current password.' : ''
+    submitted && !currentPassword ? t('account.enterCurrent') : ''
   const newError = !submitted
     ? ''
     : newPassword.length < MIN_PASSWORD_LENGTH
-      ? `Use at least ${MIN_PASSWORD_LENGTH} characters.`
+      ? t('account.passwordShort', { min: MIN_PASSWORD_LENGTH })
       : newPassword === currentPassword
-        ? 'The new password must be different.'
+        ? t('account.mustDiffer')
         : ''
   const confirmError =
-    submitted && confirmPassword !== newPassword
-      ? 'Passwords do not match.'
-      : ''
+    submitted && confirmPassword !== newPassword ? t('account.mismatch') : ''
 
   const handleSubmit = async (event: SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -195,12 +200,15 @@ const PasswordAndSecurity = () => {
       setSubmitted(false)
       setFeedback({
         severity: 'success',
-        message: 'Your password was changed.',
+        message: t('account.passwordChanged'),
       })
     } catch (err) {
       setFeedback({
         severity: 'error',
-        message: err instanceof Error ? err.message : 'Something went wrong.',
+        message:
+          err instanceof Error
+            ? tServer(err.message)
+            : t('common.somethingWrong'),
       })
     } finally {
       setSaving(false)
@@ -212,7 +220,7 @@ const PasswordAndSecurity = () => {
   return (
     <Paper variant="outlined" sx={{ p: { xs: 2, sm: 3 } }}>
       <Typography variant="h6" sx={{ mb: 2 }}>
-        Password &amp; Security
+        {t('account.security')}
       </Typography>
       <Box component="form" onSubmit={handleSubmit} noValidate>
         <Stack spacing={2}>
@@ -220,7 +228,7 @@ const PasswordAndSecurity = () => {
             <Alert severity={feedback.severity}>{feedback.message}</Alert>
           )}
           <TextField
-            label="Current password"
+            label={t('account.currentPassword')}
             name="currentPassword"
             type={type}
             autoComplete="current-password"
@@ -232,7 +240,7 @@ const PasswordAndSecurity = () => {
             required
           />
           <TextField
-            label="New password"
+            label={t('account.newPassword')}
             name="newPassword"
             type={type}
             autoComplete="new-password"
@@ -240,13 +248,14 @@ const PasswordAndSecurity = () => {
             onChange={(e) => setNewPassword(e.target.value)}
             error={!!newError}
             helperText={
-              newError || `At least ${MIN_PASSWORD_LENGTH} characters.`
+              newError ||
+              t('account.passwordHelp', { min: MIN_PASSWORD_LENGTH })
             }
             fullWidth
             required
           />
           <TextField
-            label="Confirm new password"
+            label={t('account.confirmPassword')}
             name="confirmPassword"
             type={type}
             autoComplete="new-password"
@@ -264,7 +273,7 @@ const PasswordAndSecurity = () => {
                 onChange={(e) => setShowPasswords(e.target.checked)}
               />
             }
-            label="Show passwords"
+            label={t('common.showPasswords')}
           />
           <Box sx={{ display: 'flex', justifyContent: { sm: 'flex-end' } }}>
             <Button
@@ -273,7 +282,7 @@ const PasswordAndSecurity = () => {
               disabled={saving}
               sx={{ width: { xs: '100%', sm: 'auto' } }}
             >
-              Change Password
+              {t('account.changePassword')}
             </Button>
           </Box>
         </Stack>
@@ -283,6 +292,7 @@ const PasswordAndSecurity = () => {
 }
 
 const AccountPage = () => {
+  const { t } = useTranslation()
   const dispatch = useAppDispatch()
   const account = useAppSelector(selectAccount)
   const status = useAppSelector(selectAccountStatus)
@@ -299,7 +309,7 @@ const AccountPage = () => {
   if (status === 'failed') {
     content = <Alert severity="error">{error}</Alert>
   } else if (!account) {
-    content = <Typography>Loading...</Typography>
+    content = <Typography>{t('common.loading')}</Typography>
   } else {
     content = (
       <Stack spacing={3}>
@@ -313,7 +323,7 @@ const AccountPage = () => {
   return (
     <Box component="section" sx={{ maxWidth: 640, mx: 'auto' }}>
       <Typography variant="h4" sx={{ mb: 3 }}>
-        Account
+        {t('account.title')}
       </Typography>
       {content}
     </Box>

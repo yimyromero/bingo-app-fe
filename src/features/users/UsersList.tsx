@@ -29,6 +29,7 @@ import {
 } from './usersApiSlice'
 import UserCard from './UserCard'
 import type { UserCardType } from './UserCard'
+import { useTranslation } from '../../i18n/useTranslation'
 
 interface TokenPayload extends JwtPayload {
   userInfo: { id: number; role: string }
@@ -38,6 +39,7 @@ type StatusFilter = 'all' | 'active' | 'disabled'
 type PendingAction = { type: 'reset' | 'status'; user: UserCardType } | null
 
 export const UsersList = () => {
+  const { t, tServer } = useTranslation()
   const dispatch = useAppDispatch()
   const users = useAppSelector(selectAllUsers)
   const userStatus = useAppSelector(selectUserStatus)
@@ -76,19 +78,24 @@ export const UsersList = () => {
 
     try {
       setWorking(true)
-      const message =
-        type === 'reset'
-          ? await dispatch(sendPasswordReset(user.id)).unwrap()
-          : (
-              await dispatch(
-                updateUserStatus({ id: user.id, active: !user.active })
-              ).unwrap()
-            ).message
+      let message: string
+      if (type === 'reset') {
+        await dispatch(sendPasswordReset(user.id)).unwrap()
+        message = t('users.resetSent', { email: user.email })
+      } else {
+        await dispatch(
+          updateUserStatus({ id: user.id, active: !user.active })
+        ).unwrap()
+        message = user.active ? t('users.deactivated') : t('users.activated')
+      }
       setNotice({ severity: 'success', message })
     } catch (err) {
       setNotice({
         severity: 'error',
-        message: err instanceof Error ? err.message : 'Something went wrong.',
+        message:
+          err instanceof Error
+            ? tServer(err.message)
+            : t('common.somethingWrong'),
       })
     } finally {
       setWorking(false)
@@ -105,7 +112,7 @@ export const UsersList = () => {
   let content: React.ReactNode
 
   if (userStatus === 'pending') {
-    content = <h1>Loading...</h1>
+    content = <h1>{t('common.loading')}</h1>
   } else if (userStatus === 'succeeded') {
     content = visibleUsers.length ? (
       visibleUsers.map((user) => (
@@ -118,7 +125,9 @@ export const UsersList = () => {
         />
       ))
     ) : (
-      <Typography sx={{ color: 'text.secondary' }}>No users found.</Typography>
+      <Typography sx={{ color: 'text.secondary' }}>
+        {t('users.none')}
+      </Typography>
     )
   } else if (userStatus === 'rejected') {
     content = <div>{usersError}</div>
@@ -130,15 +139,15 @@ export const UsersList = () => {
         direction="row"
         sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}
       >
-        <Typography variant="h4">Users</Typography>
+        <Typography variant="h4">{t('users.title')}</Typography>
         <Button variant="contained" component={Link} to="/dash/users/new">
-          New user
+          {t('users.newUser')}
         </Button>
       </Stack>
       <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} sx={{ mb: 2 }}>
         <TextField
           size="small"
-          label="Search by name or email"
+          label={t('users.search')}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           fullWidth
@@ -146,14 +155,14 @@ export const UsersList = () => {
         <TextField
           select
           size="small"
-          label="Status"
+          label={t('common.status')}
           value={statusFilter}
           onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
           sx={{ minWidth: { sm: 160 } }}
         >
-          <MenuItem value="all">All</MenuItem>
-          <MenuItem value="active">Active</MenuItem>
-          <MenuItem value="disabled">Disabled</MenuItem>
+          <MenuItem value="all">{t('common.all')}</MenuItem>
+          <MenuItem value="active">{t('common.active')}</MenuItem>
+          <MenuItem value="disabled">{t('common.disabled')}</MenuItem>
         </TextField>
       </Stack>
       <List sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
@@ -163,10 +172,10 @@ export const UsersList = () => {
       <Dialog open={!!pending} onClose={() => !working && setPending(null)}>
         <DialogTitle>
           {pending?.type === 'reset'
-            ? 'Send password reset?'
+            ? t('users.resetTitle')
             : pending?.user.active
-              ? 'Deactivate account?'
-              : 'Activate account?'}
+              ? t('users.deactivateTitle')
+              : t('users.activateTitle')}
         </DialogTitle>
         <DialogContent>
           <DialogContentText component="div">
@@ -175,10 +184,10 @@ export const UsersList = () => {
             </Typography>
             <Typography sx={{ mb: 2 }}>{pending?.user.email}</Typography>
             {pending?.type === 'reset'
-              ? 'A link to choose a new password will be emailed to this user. Any link sent before stops working.'
+              ? t('users.resetBody')
               : pending?.user.active
-                ? "The user will be signed out and won't be able to log in. Their data is kept."
-                : 'The user will be able to log in again with their existing password.'}
+                ? t('users.deactivateBody')
+                : t('users.activateBody')}
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 2 }}>
@@ -187,7 +196,7 @@ export const UsersList = () => {
             onClick={() => setPending(null)}
             disabled={working}
           >
-            Cancel
+            {t('common.cancel')}
           </Button>
           <Button
             variant="contained"
@@ -200,10 +209,10 @@ export const UsersList = () => {
             disabled={working}
           >
             {pending?.type === 'reset'
-              ? 'Send email'
+              ? t('users.sendEmail')
               : pending?.user.active
-                ? 'Deactivate'
-                : 'Activate'}
+                ? t('users.deactivate')
+                : t('users.activate')}
           </Button>
         </DialogActions>
       </Dialog>

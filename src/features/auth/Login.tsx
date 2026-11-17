@@ -12,6 +12,8 @@ import { useState, type ChangeEvent } from 'react'
 import { useAppDispatch } from '../../hooks/hooks'
 import { login } from '../auth/authApiSlice'
 import { useNavigate, useLocation, replace } from 'react-router'
+import { useTranslation } from '../../i18n/useTranslation'
+import LanguageSwitcher from '../../components/LanguageSwitcher'
 
 interface LoginFormFields extends HTMLFormControlsCollection {
   email: HTMLInputElement
@@ -23,6 +25,7 @@ interface LoginFormElement extends HTMLFormElement {
 }
 
 const Login = () => {
+  const { t } = useTranslation()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
@@ -56,6 +59,9 @@ const Login = () => {
 
   return (
     <>
+      <Box sx={{ position: 'absolute', top: 16, right: 16 }}>
+        <LanguageSwitcher />
+      </Box>
       <Box
         sx={{
           display: 'flex',
@@ -78,11 +84,9 @@ const Login = () => {
           variant="h3"
           sx={{ fontSize: 'large', fontWeight: 'bold', mb: 1 }}
         >
-          Welcome back
+          {t('auth.welcomeBack')}
         </Typography>
-        <Typography variant="body2">
-          Enter your email address and password to access your account.
-        </Typography>
+        <Typography variant="body2">{t('auth.loginSubtitle')}</Typography>
       </Box>
       <Box
         sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}
@@ -94,7 +98,7 @@ const Login = () => {
         >
           <Stack direction="column" gap={2}>
             <TextField
-              label="Email address"
+              label={t('auth.email')}
               type="text"
               name="email"
               required
@@ -102,7 +106,7 @@ const Login = () => {
               onChange={handleEmailInput}
             />
             <TextField
-              label="Password"
+              label={t('auth.password')}
               type="password"
               name="password"
               autoComplete="current-password"
@@ -117,10 +121,10 @@ const Login = () => {
                   onChange={(e) => setRememberMe(e.target.checked)}
                 />
               }
-              label="Keep me signed in"
+              label={t('auth.keepSignedIn')}
             />
             <Button type="submit" variant="contained" size="large">
-              Login
+              {t('auth.login')}
             </Button>
           </Stack>
         </Box>

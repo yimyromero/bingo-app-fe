@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router'
-import { formatDate, formatDistanceToNow, isPast } from 'date-fns'
+import { isPast } from 'date-fns'
 import {
   Alert,
   Box,
@@ -26,6 +26,7 @@ import {
   selectDashboardStatus,
 } from './dashboardApiSlice'
 import type { DashboardBingo } from './dashboardApiSlice'
+import { useTranslation } from '../../i18n/useTranslation'
 
 const NEARLY_FULL = 0.9
 
@@ -50,6 +51,7 @@ const BingoRow = ({
   bingo: DashboardBingo
   onShare: (id: number) => void
 }) => {
+  const { t, formatDate } = useTranslation()
   const pct = percent(bingo)
   return (
     <Paper variant="outlined" sx={{ p: 2 }}>
@@ -71,14 +73,14 @@ const BingoRow = ({
           startIcon={<ShareIcon />}
           onClick={() => onShare(bingo.id)}
         >
-          Share
+          {t('common.share')}
         </Button>
       </Stack>
       {bingo.raffleDate && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mt: 0.5 }}>
           <EventIcon sx={{ fontSize: 16 }} />
           <Typography variant="body2" sx={{ color: 'text.secondary' }}>
-            {formatDate(new Date(bingo.raffleDate), 'PPP')}
+            {formatDate(bingo.raffleDate)}
           </Typography>
         </Box>
       )}
@@ -88,13 +90,18 @@ const BingoRow = ({
         sx={{ height: 8, borderRadius: 4, mt: 1.5 }}
       />
       <Typography variant="caption" sx={{ color: 'text.secondary' }}>
-        {bingo.taken} of {bingo.gridSize} taken ({pct}%)
+        {t('dashboard.progress', {
+          taken: bingo.taken,
+          total: bingo.gridSize,
+          percent: pct,
+        })}
       </Typography>
     </Paper>
   )
 }
 
 const DashboardPage = () => {
+  const { t, timeAgo } = useTranslation()
   const dispatch = useAppDispatch()
   const bingos = useAppSelector(selectDashboardBingos)
   const recent = useAppSelector(selectDashboardRecent)
@@ -115,12 +122,12 @@ const DashboardPage = () => {
     const attention = active.flatMap((b) => {
       const notes: string[] = []
       if (b.raffleDate && isPast(new Date(b.raffleDate))) {
-        notes.push('Draw date has passed, not marked as finished')
+        notes.push(t('dashboard.drawPassed'))
       }
       if (b.gridSize && b.taken >= b.gridSize) {
-        notes.push('All spots are taken')
+        notes.push(t('dashboard.allTaken'))
       } else if (b.gridSize && b.taken / b.gridSize >= NEARLY_FULL) {
-        notes.push(`Nearly full, ${b.gridSize - b.taken} spots left`)
+        notes.push(t('dashboard.nearlyFull', { count: b.gridSize - b.taken }))
       }
       return notes.map((note) => ({ bingo: b, note }))
     })
@@ -132,7 +139,7 @@ const DashboardPage = () => {
       { taken: 0, available: 0 }
     )
     return { active, upcoming, attention, totals }
-  }, [bingos])
+  }, [bingos, t])
 
   const loading = status === 'pending' && !bingos.length
 
@@ -142,32 +149,38 @@ const DashboardPage = () => {
         direction="row"
         sx={{ justifyContent: 'space-between', alignItems: 'center', mb: 3 }}
       >
-        <Typography variant="h4">Dashboard</Typography>
+        <Typography variant="h4">{t('dashboard.title')}</Typography>
         <Button
           variant="contained"
           startIcon={<AddIcon />}
           component={Link}
           to="/dash/bingos/new"
         >
-          New bingo
+          {t('dashboard.newBingo')}
         </Button>
       </Stack>
 
       {status === 'failed' && <Alert severity="error">{error}</Alert>}
-      {loading && <Typography>Loading...</Typography>}
+      {loading && <Typography>{t('common.loading')}</Typography>}
 
       {status !== 'failed' && !loading && (
         <Stack spacing={4}>
           <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 2 }}>
-            <StatTile label="Active bingos" value={active.length} />
-            <StatTile label="Spots taken" value={totals.taken} />
-            <StatTile label="Spots available" value={totals.available} />
+            <StatTile
+              label={t('dashboard.activeBingos')}
+              value={active.length}
+            />
+            <StatTile label={t('dashboard.spotsTaken')} value={totals.taken} />
+            <StatTile
+              label={t('dashboard.spotsAvailable')}
+              value={totals.available}
+            />
           </Stack>
 
           {attention.length > 0 && (
             <Box>
               <Typography variant="h6" sx={{ mb: 1 }}>
-                Needs attention
+                {t('dashboard.needsAttention')}
               </Typography>
               <Stack spacing={1}>
                 {attention.map(({ bingo, note }) => (
@@ -181,7 +194,7 @@ const DashboardPage = () => {
                         component={Link}
                         to={`/dash/bingos/${bingo.id}/view`}
                       >
-                        Open
+                        {t('common.open')}
                       </Button>
                     }
                   >
@@ -194,7 +207,7 @@ const DashboardPage = () => {
 
           <Box>
             <Typography variant="h6" sx={{ mb: 1 }}>
-              Upcoming raffles
+              {t('dashboard.upcoming')}
             </Typography>
             {upcoming.length ? (
               <Stack spacing={2}>
@@ -204,14 +217,14 @@ const DashboardPage = () => {
               </Stack>
             ) : (
               <Typography sx={{ color: 'text.secondary' }}>
-                No upcoming raffles. Create a bingo to get started.
+                {t('dashboard.noUpcoming')}
               </Typography>
             )}
           </Box>
 
           <Box>
             <Typography variant="h6" sx={{ mb: 1 }}>
-              Recent activity
+              {t('dashboard.recent')}
             </Typography>
             {recent.length ? (
               <Stack spacing={1}>
@@ -229,7 +242,10 @@ const DashboardPage = () => {
                     <Chip size="small" color="primary" label={r.cellNumber} />
                     <Box sx={{ flexGrow: 1, minWidth: 0 }}>
                       <Typography noWrap>
-                        {r.participantName} took spot {r.cellNumber}
+                        {t('dashboard.tookSpot', {
+                          name: r.participantName ?? '',
+                          number: r.cellNumber,
+                        })}
                       </Typography>
                       <Typography
                         variant="caption"
@@ -242,16 +258,14 @@ const DashboardPage = () => {
                       variant="caption"
                       sx={{ color: 'text.secondary', whiteSpace: 'nowrap' }}
                     >
-                      {formatDistanceToNow(new Date(r.takenAt), {
-                        addSuffix: true,
-                      })}
+                      {timeAgo(r.takenAt)}
                     </Typography>
                   </Paper>
                 ))}
               </Stack>
             ) : (
               <Typography sx={{ color: 'text.secondary' }}>
-                No spots taken yet.
+                {t('dashboard.noRecent')}
               </Typography>
             )}
           </Box>

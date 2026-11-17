@@ -1,5 +1,15 @@
+import LanguageSwitcher from './LanguageSwitcher'
+import { useTranslation } from '../i18n/useTranslation'
+
 const Public = () => {
-  return <h1>Bingo Landing Page</h1>
+  const { t } = useTranslation()
+
+  return (
+    <>
+      <LanguageSwitcher />
+      <h1>{t('public.landing')}</h1>
+    </>
+  )
 }
 
 export default Public

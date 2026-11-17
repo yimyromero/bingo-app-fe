@@ -24,13 +24,15 @@ import {
   selectAllDetails,
   selectDetailsStatus,
   selectDetailsError,
-  fetchBingos,
+  fetchBingoById,
   fetchBingoDetails,
   selectBingosById,
   selectTakenCount,
 } from './bingosApiSlice'
+import { useTranslation } from '../../i18n/useTranslation'
 
 const BingoView = () => {
+  const { t } = useTranslation()
   const dispatch = useAppDispatch()
   const details = useAppSelector(selectAllDetails)
   const detailStatus = useAppSelector(selectDetailsStatus)
@@ -38,6 +40,7 @@ const BingoView = () => {
   const takenBingoSquares = useAppSelector(selectTakenCount)
   const token = useAppSelector(selectCurrentToken)
   const [shareOpen, setShareOpen] = useState(false)
+  const [loadError, setLoadError] = useState<string | null>(null)
 
   const { id } = useParams()
   const numericId = Number(id)
@@ -45,7 +48,9 @@ const BingoView = () => {
 
   useEffect(() => {
     if (!bingo) {
-      dispatch(fetchBingos())
+      dispatch(fetchBingoById(numericId))
+        .unwrap()
+        .catch((err: Error) => setLoadError(err.message))
     }
     dispatch(fetchBingoDetails(numericId))
   }, [numericId, bingo, dispatch])
@@ -63,11 +68,15 @@ const BingoView = () => {
   }
 
   if (!bingo) {
-    return <h3>Loading bingo</h3>
+    return loadError ? (
+      <h3>{loadError}</h3>
+    ) : (
+      <h3>{t('bingos.loadingBingo')}</h3>
+    )
   }
 
   if (detailStatus === 'pending') {
-    content = <h3>Loading</h3>
+    content = <h3>{t('common.loading')}</h3>
   } else if (detailStatus === 'succeeded') {
     content = <BingoGrid details={details} />
   } else if (detailStatus === 'failed') {
@@ -86,7 +95,7 @@ const BingoView = () => {
         }}
       >
         <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
-          <Typography variant="inherit">Squares</Typography>
+          <Typography variant="inherit">{t('bingos.squares')}</Typography>
           {bingo.userId === currentUserId && (
             <Button
               size="small"
@@ -94,7 +103,7 @@ const BingoView = () => {
               startIcon={<ShareIcon />}
               onClick={() => setShareOpen(true)}
             >
-              Share Update
+              {t('bingos.shareUpdate')}
             </Button>
           )}
         </Stack>
@@ -105,7 +114,7 @@ const BingoView = () => {
             sx={{ display: 'flex', alignItems: 'center' }}
           >
             <Typography variant="subtitle2" sx={{ color: 'primary.main' }}>
-              Available:
+              {t('bingos.available')}
             </Typography>
             <Typography variant="inherit">
               {bingo.gridSize - takenBingoSquares}
@@ -117,7 +126,7 @@ const BingoView = () => {
             sx={{ display: 'flex', alignItems: 'center' }}
           >
             <Typography variant="subtitle2" sx={{ color: 'GrayText' }}>
-              Taken:
+              {t('bingos.taken')}
             </Typography>
             <Typography variant="inherit">{takenBingoSquares}</Typography>
           </Stack>

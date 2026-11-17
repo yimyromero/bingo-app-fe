@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import { format } from 'date-fns'
 import { MoreHoriz } from '@mui/icons-material'
 import {
   Chip,
@@ -11,6 +10,7 @@ import {
   Stack,
   Typography,
 } from '@mui/material'
+import { useTranslation } from '../../i18n/useTranslation'
 
 export interface UserCardType {
   id: number
@@ -34,6 +34,7 @@ const UserCard = ({
   onToggleStatus,
   ...user
 }: UserCardProps) => {
+  const { t, formatDate } = useTranslation()
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const closeMenu = () => setAnchorEl(null)
 
@@ -53,12 +54,12 @@ const UserCard = ({
         >
           <Chip
             size="small"
-            label={user.active ? 'Active' : 'Disabled'}
+            label={user.active ? t('common.active') : t('common.disabled')}
             color={user.active ? 'success' : 'error'}
             variant="outlined"
           />
           <IconButton
-            aria-label={`More options for ${user.name}`}
+            aria-label={t('users.moreOptions', { name: user.name })}
             size="small"
             onClick={(e) => setAnchorEl(e.currentTarget)}
           >
@@ -71,7 +72,7 @@ const UserCard = ({
                 onResetPassword(user)
               }}
             >
-              Send Password Reset
+              {t('users.sendReset')}
             </MenuItem>
             <MenuItem
               // admins can't deactivate themselves (also enforced by the API)
@@ -81,7 +82,9 @@ const UserCard = ({
                 onToggleStatus(user)
               }}
             >
-              {user.active ? 'Deactivate Account' : 'Activate Account'}
+              {user.active
+                ? t('users.deactivateAccount')
+                : t('users.activateAccount')}
             </MenuItem>
           </Menu>
         </Stack>
@@ -104,7 +107,9 @@ const UserCard = ({
                 variant="caption"
                 sx={{ color: 'text.secondary', display: 'block' }}
               >
-                Created {format(new Date(user.created_at), 'PP')}
+                {t('users.created', {
+                  date: formatDate(user.created_at, 'PP'),
+                })}
               </Typography>
             )}
           </>
