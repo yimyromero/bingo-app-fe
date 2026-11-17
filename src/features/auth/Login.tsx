@@ -1,4 +1,5 @@
 import {
+  Alert,
   Box,
   Button,
   Checkbox,
@@ -29,6 +30,7 @@ const Login = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [rememberMe, setRememberMe] = useState(false)
+  const [loginError, setLoginError] = useState<string | null>(null)
 
   const navigate = useNavigate()
   const location = useLocation()
@@ -41,6 +43,7 @@ const Login = () => {
 
   const handleSubmit = async (event: React.SubmitEvent<HTMLFormElement>) => {
     event.preventDefault()
+    setLoginError(null)
 
     try {
       //setAddRequestedStatus('pending')
@@ -54,6 +57,18 @@ const Login = () => {
       //form.reset()
     } catch (err) {
       console.error('Issue logging in', err)
+      // thunk errors are plain objects, so read name/message rather than instanceof
+      const { name, message } = err as { name?: string; message?: string }
+      if (name === 'TypeError') {
+        // fetch itself failed: the server was never reached
+        setLoginError(t('auth.networkError'))
+      } else if (message === 'HTTP 400') {
+        setLoginError(t('auth.missingFields'))
+      } else if (message === 'HTTP 401') {
+        setLoginError(t('auth.loginFailed'))
+      } else {
+        setLoginError(t('auth.serverError'))
+      }
     }
   }
 
@@ -123,6 +138,7 @@ const Login = () => {
               }
               label={t('auth.keepSignedIn')}
             />
+            {loginError && <Alert severity="error">{loginError}</Alert>}
             <Button type="submit" variant="contained" size="large">
               {t('auth.login')}
             </Button>

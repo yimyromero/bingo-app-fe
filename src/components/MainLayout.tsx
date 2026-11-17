@@ -8,7 +8,6 @@ import ListItemText from '@mui/material/ListItemText'
 import Tooltip from '@mui/material/Tooltip'
 import Menu from '@mui/material/Menu'
 import MenuItem from '@mui/material/MenuItem'
-import Avatar from '@mui/material/Avatar'
 import MenuIcon from '@mui/icons-material/Menu'
 import DashboardIcon from '@mui/icons-material/Dashboard'
 import UsersIcon from '@mui/icons-material/Group'
@@ -17,7 +16,7 @@ import AccountSettingsIcons from '@mui/icons-material/Settings'
 import LogoutIcon from '@mui/icons-material/Logout'
 import Drawer from '@mui/material/Drawer'
 import Box from '@mui/material/Box'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import CssBaseline from '@mui/material/CssBaseline'
 import { AppBar, Button, IconButton, Typography } from '@mui/material'
 import { NavLink, Outlet, replace, useNavigate } from 'react-router'
@@ -27,6 +26,11 @@ import { useAppSelector } from '../hooks/hooks'
 import { useTranslation } from '../i18n/useTranslation'
 import type { TranslationKey } from '../i18n/locales/en'
 import LanguageSwitcher from './LanguageSwitcher'
+import UserAvatar from './UserAvatar'
+import {
+  fetchAccount,
+  selectAccount,
+} from '../features/account/accountApiSlice'
 import { logout, selectCurrentToken } from '../features/auth/authApiSlice'
 
 const drawerWidth = 240
@@ -78,6 +82,7 @@ const isAdmin = (token: string | null) => {
 const MainLayout = () => {
   const { t } = useTranslation()
   const token = useAppSelector(selectCurrentToken)
+  const account = useAppSelector(selectAccount)
   // user management is admin only (the API enforces it too)
   const visiblePrimaryOptions = primaryMenuOptions.filter(
     (option) => option.path !== '/dash/users' || isAdmin(token)
@@ -111,6 +116,11 @@ const MainLayout = () => {
 
   const navigate = useNavigate()
   const dispatch = useAppDispatch()
+
+  // the app bar shows who is signed in
+  useEffect(() => {
+    dispatch(fetchAccount())
+  }, [dispatch])
 
   const handleLogout = async () => {
     try {
@@ -227,7 +237,11 @@ const MainLayout = () => {
               <LanguageSwitcher />
               <Tooltip title={t('nav.openSettings')}>
                 <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                  <Avatar alt="Remy Sharp" src="/static/images/avatar/2.jpg" />
+                  <UserAvatar
+                    name={account?.name}
+                    email={account?.email}
+                    imageUrl={account?.avatarUrl}
+                  />
                 </IconButton>
               </Tooltip>
               <Menu

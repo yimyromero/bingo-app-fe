@@ -38,6 +38,12 @@ export const es: Messages = {
     email: 'Correo electrónico',
     password: 'Contraseña',
     keepSignedIn: 'Mantener la sesión iniciada',
+    loginFailed:
+      'Correo o contraseña incorrectos, o la cuenta está desactivada.',
+    missingFields: 'Ingresa tu correo y contraseña.',
+    serverError: 'Ocurrió un error en el servidor. Inténtalo de nuevo.',
+    networkError:
+      'No se pudo conectar con el servidor. Revisa tu conexión e inténtalo de nuevo.',
     login: 'Iniciar sesión',
     reset: {
       title: 'Elige una nueva contraseña',

@@ -38,6 +38,11 @@ export const en = {
     email: 'Email address',
     password: 'Password',
     keepSignedIn: 'Keep me signed in',
+    loginFailed: 'Incorrect email or password, or the account is disabled.',
+    missingFields: 'Enter your email and password.',
+    serverError: 'Something went wrong on the server. Please try again.',
+    networkError:
+      'Could not reach the server. Check your connection and try again.',
     login: 'Login',
     reset: {
       title: 'Choose a new password',

@@ -1,7 +1,7 @@
 import { refreshSession } from '../features/auth/authApiSlice'
 import type { AppDispatch, RootState } from '../store'
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL
+import { baseUrl } from './baseUrl'
 
 interface ThunkApiLike {
   getState: () => RootState

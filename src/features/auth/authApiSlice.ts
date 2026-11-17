@@ -3,7 +3,7 @@ import { createAppAsyncThunk } from '../../withTypes'
 import type { User } from '../users/usersApiSlice'
 import type { RootState } from '../../store'
 
-const baseUrl = import.meta.env.VITE_API_BASE_URL
+import { baseUrl } from '../../api/baseUrl'
 
 type Status = 'idle' | 'pending' | 'succeeded' | 'failed'
 
@@ -35,7 +35,8 @@ export const login = createAppAsyncThunk(
     const result = await response.json()
 
     if (!response.ok) {
-      throw new Error(`Response status: ${response.statusText}`)
+      // the status code lets the form pick the right message
+      throw new Error(`HTTP ${response.status}`)
     }
 
     return result

@@ -10,6 +10,8 @@ export interface Account {
   email: string
   name: string
   active: boolean
+  // not stored yet; the avatar shows the initials when it is missing
+  avatarUrl?: string | null
 }
 
 export type AccountUpdate = Pick<Account, 'name' | 'email'>
