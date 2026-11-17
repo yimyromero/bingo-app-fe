@@ -1,9 +1,10 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useParams } from 'react-router'
 import {
   Avatar,
   Badge,
   Box,
+  Button,
   Chip,
   Paper,
   Stack,
@@ -11,10 +12,14 @@ import {
   Typography,
 } from '@mui/material'
 import NumbersIcon from '@mui/icons-material/Numbers'
+import ShareIcon from '@mui/icons-material/Share'
+import { jwtDecode, type JwtPayload } from 'jwt-decode'
 import BingoGrid from './BingoGrid'
 import BingoInfoForm from './BingoInfoForm'
+import ShareUpdateDialog from './ShareUpdateDialog'
 
 import { useAppDispatch, useAppSelector } from '../../hooks/hooks'
+import { selectCurrentToken } from '../auth/authApiSlice'
 import {
   selectAllDetails,
   selectDetailsStatus,
@@ -31,6 +36,8 @@ const BingoView = () => {
   const detailStatus = useAppSelector(selectDetailsStatus)
   const detailError = useAppSelector(selectDetailsError)
   const takenBingoSquares = useAppSelector(selectTakenCount)
+  const token = useAppSelector(selectCurrentToken)
+  const [shareOpen, setShareOpen] = useState(false)
 
   const { id } = useParams()
   const numericId = Number(id)
@@ -44,6 +51,16 @@ const BingoView = () => {
   }, [numericId, bingo, dispatch])
 
   let content: React.ReactNode
+
+  // only the creator of the bingo can share updates
+  let currentUserId: number | null = null
+  try {
+    currentUserId = token
+      ? jwtDecode<JwtPayload & { userInfo: { id: number } }>(token).userInfo.id
+      : null
+  } catch {
+    currentUserId = null
+  }
 
   if (!bingo) {
     return <h3>Loading bingo</h3>
@@ -68,7 +85,19 @@ const BingoView = () => {
           fontWeight: 500,
         }}
       >
-        <Typography variant="inherit">Squares</Typography>
+        <Stack direction="row" spacing={2} sx={{ alignItems: 'center' }}>
+          <Typography variant="inherit">Squares</Typography>
+          {bingo.userId === currentUserId && (
+            <Button
+              size="small"
+              variant="outlined"
+              startIcon={<ShareIcon />}
+              onClick={() => setShareOpen(true)}
+            >
+              Share Update
+            </Button>
+          )}
+        </Stack>
         <Stack direction="row" spacing={2}>
           <Stack
             spacing={0.5}
@@ -98,6 +127,11 @@ const BingoView = () => {
       <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
         {content}
       </Paper>
+      <ShareUpdateDialog
+        open={shareOpen}
+        bingoId={bingo.id}
+        onClose={() => setShareOpen(false)}
+      />
     </Box>
   )
 }

@@ -139,6 +139,26 @@ export const fetchBingoDetails = createAppAsyncThunk(
   }
 )
 
+// Re-read the bingo and its cells from the API (used before sharing an update)
+export const refreshBingoSnapshot = createAppAsyncThunk(
+  'bingos/refreshBingoSnapshot',
+  async (bingoId: number, thunkApi) => {
+    const [bingosResponse, detailsResponse] = await Promise.all([
+      authFetch(thunkApi, `/bingos`),
+      authFetch(thunkApi, `/bingos/${bingoId}/details`),
+    ])
+
+    if (!bingosResponse.ok || !detailsResponse.ok) {
+      throw new Error('Could not load the latest bingo data.')
+    }
+
+    const bingos = (await bingosResponse.json()).data as Bingo[]
+    const details = (await detailsResponse.json()) as BingoDetail[]
+
+    return { bingoId, bingos, details }
+  }
+)
+
 export const updateBingoCell = createAppAsyncThunk(
   'bingos/updateBingoCell',
   async (
@@ -215,6 +235,13 @@ const bingosSlice = createSlice({
         state.detailStatus = 'failed'
         state.currentBingoId = action.meta.arg
         state.error = action.error.message ?? 'Unknown Error'
+      })
+      .addCase(refreshBingoSnapshot.fulfilled, (state, action) => {
+        const { bingoId, bingos, details } = action.payload
+        bingosAdapter.upsertMany(state.bingos, bingos)
+        detailsAdapter.setAll(state.details, details)
+        state.currentBingoId = bingoId
+        state.detailStatus = 'succeeded'
       })
       .addCase(updateBingoCell.fulfilled, (state, action) => {
         console.log(action.payload)
